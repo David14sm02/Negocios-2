@@ -1,0 +1,277 @@
+{
+  "products": [
+    {
+      "id": "1",
+      "name": "Cable Cat6 UTP 305m",
+      "description": "Cable de red Cat6 UTP de 305 metros para instalaciones profesionales. Cumple con estándares TIA/EIA-568-B.2-1.",
+      "price": 2500,
+      "category": "cables",
+      "subcategory": "ethernet",
+      "sku": "CAT6-305M",
+      "brand": "NetTech",
+      "stock": 50,
+      "image": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk0YTNiOCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkNhYmxlIENhdDY8L3RleHQ+PC9zdmc+",
+      "specifications": {
+        "type": "Cat6 UTP",
+        "length": "305 metros",
+        "conductor": "Cobre sólido 23 AWG",
+        "jacket": "PVC",
+        "frequency": "250 MHz",
+        "speed": "1 Gbps",
+        "color": "Azul"
+      },
+      "features": [
+        "Cumple estándares TIA/EIA-568-B.2-1",
+        "Conductor de cobre sólido 23 AWG",
+        "Cubierta PVC resistente",
+        "Ideal para instalaciones comerciales"
+      ],
+      "tags": ["cat6", "cable", "ethernet", "305m", "utp"]
+    },
+    {
+      "id": "2",
+      "name": "Conectores RJ45 Cat6",
+      "description": "Conectores RJ45 para cable Cat6, paquete de 100 unidades. Compatible con cables de hasta 23 AWG.",
+      "price": 150,
+      "category": "conectores",
+      "subcategory": "rj45",
+      "sku": "RJ45-CAT6",
+      "brand": "NetTech",
+      "stock": 200,
+      "image": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk0YTNiOCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkNvbmVjdG9yIFJKNjQ1PC90ZXh0Pjwvc3ZnPg==",
+      "specifications": {
+        "type": "RJ45 Cat6",
+        "quantity": "100 unidades",
+        "compatibility": "Cat6, Cat5e",
+        "conductor": "Hasta 23 AWG",
+        "material": "Plástico ABS",
+        "termination": "8P8C"
+      },
+      "features": [
+        "Compatible con cables Cat6 y Cat5e",
+        "Terminación 8P8C estándar",
+        "Material plástico ABS resistente",
+        "Paquete de 100 unidades"
+      ],
+      "tags": ["rj45", "conector", "cat6", "100pcs"]
+    },
+    {
+      "id": "3",
+      "name": "Switch 24 Puertos Gigabit",
+      "description": "Switch de red 24 puertos Gigabit con gestión web. Ideal para oficinas pequeñas y medianas.",
+      "price": 3500,
+      "category": "equipos",
+      "subcategory": "switches",
+      "sku": "SW-24G",
+      "brand": "NetTech",
+      "stock": 15,
+      "image": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk0YTNiOCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPlN3aXRjaCAyNFBvcnRzPC90ZXh0Pjwvc3ZnPg==",
+      "specifications": {
+        "ports": "24 puertos Gigabit",
+        "management": "Web GUI",
+        "switching": "48 Gbps",
+        "mac": "8K MAC addresses",
+        "power": "12V DC",
+        "dimensions": "440 x 200 x 44 mm"
+      },
+      "features": [
+        "24 puertos Gigabit Ethernet",
+        "Interfaz de gestión web",
+        "Auto MDI/MDIX",
+        "VLAN support",
+        "QoS básico"
+      ],
+      "tags": ["switch", "gigabit", "24puertos", "managed"]
+    },
+    {
+      "id": "4",
+      "name": "Crimpeadora RJ45",
+      "description": "Herramienta crimpeadora profesional para conectores RJ45. Incluye cortador y pelacables integrado.",
+      "price": 800,
+      "category": "herramientas",
+      "subcategory": "crimpeadoras",
+      "sku": "CRIMP-RJ45",
+      "brand": "NetTech",
+      "stock": 25,
+      "image": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk0YTNiOCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkNyaW1wZWFkb3JhPC90ZXh0Pjwvc3ZnPg==",
+      "specifications": {
+        "type": "Crimpeadora RJ45",
+        "compatibility": "RJ45, RJ11, RJ12",
+        "material": "Acero templado",
+        "features": "Cortador y pelacables integrado",
+        "weight": "450g",
+        "warranty": "2 años"
+      },
+      "features": [
+        "Compatible con RJ45, RJ11, RJ12",
+        "Cortador de cable integrado",
+        "Pelacables automático",
+        "Mango ergonómico antideslizante",
+        "Garantía de 2 años"
+      ],
+      "tags": ["crimpeadora", "rj45", "herramienta", "profesional"]
+    },
+    {
+      "id": "5",
+      "name": "Cable Cat6a UTP 305m",
+      "description": "Cable de red Cat6a UTP de 305 metros para instalaciones de alta velocidad. Soporte para 10 Gigabit Ethernet.",
+      "price": 3200,
+      "category": "cables",
+      "subcategory": "ethernet",
+      "sku": "CAT6A-305M",
+      "brand": "NetTech",
+      "stock": 30,
+      "image": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk0YTNiOCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkNhYmxlIENhdDZhPC90ZXh0Pjwvc3ZnPg==",
+      "specifications": {
+        "type": "Cat6a UTP",
+        "length": "305 metros",
+        "conductor": "Cobre sólido 23 AWG",
+        "jacket": "PVC LSZH",
+        "frequency": "500 MHz",
+        "speed": "10 Gbps",
+        "color": "Verde"
+      },
+      "features": [
+        "Soporte para 10 Gigabit Ethernet",
+        "Frecuencia hasta 500 MHz",
+        "Cubierta LSZH retardante de llama",
+        "Ideal para centros de datos"
+      ],
+      "tags": ["cat6a", "cable", "10gb", "ethernet", "305m"]
+    },
+    {
+      "id": "6",
+      "name": "Patch Panel 24 Puertos Cat6",
+      "description": "Patch panel de 24 puertos Cat6 con montaje en rack. Terminación IDC para fácil instalación.",
+      "price": 1200,
+      "category": "conectores",
+      "subcategory": "patchpanels",
+      "sku": "PP-24-CAT6",
+      "brand": "NetTech",
+      "stock": 40,
+      "image": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk0YTNiOCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPlBhdGNoIFBhbmVsPC90ZXh0Pjwvc3ZnPg==",
+      "specifications": {
+        "ports": "24 puertos RJ45",
+        "category": "Cat6",
+        "mounting": "Rack 19\"",
+        "termination": "IDC",
+        "material": "Metal",
+        "height": "1U"
+      },
+      "features": [
+        "24 puertos RJ45 Cat6",
+        "Montaje en rack 19 pulgadas",
+        "Terminación IDC",
+        "Construcción metálica robusta",
+        "Altura 1U"
+      ],
+      "tags": ["patchpanel", "24puertos", "cat6", "rack"]
+    },
+    {
+      "id": "7",
+      "name": "Router WiFi 6 AX3000",
+      "description": "Router WiFi 6 con velocidad AX3000. Ideal para hogares y oficinas pequeñas con múltiples dispositivos.",
+      "price": 2800,
+      "category": "equipos",
+      "subcategory": "routers",
+      "sku": "RT-WIFI6-AX3000",
+      "brand": "NetTech",
+      "stock": 20,
+      "image": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk0YTNiOCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPlJvdXRlciBXaUZpIDY8L3RleHQ+PC9zdmc+",
+      "specifications": {
+        "standard": "WiFi 6 (802.11ax)",
+        "speed": "AX3000 (574 + 2402 Mbps)",
+        "ports": "4 Gigabit LAN + 1 WAN",
+        "antennas": "4 antenas externas",
+        "security": "WPA3",
+        "usb": "1 puerto USB 3.0"
+      },
+      "features": [
+        "WiFi 6 (802.11ax) AX3000",
+        "4 puertos Gigabit Ethernet",
+        "4 antenas externas de alta ganancia",
+        "Seguridad WPA3",
+        "Puerto USB 3.0"
+      ],
+      "tags": ["router", "wifi6", "ax3000", "gigabit"]
+    },
+    {
+      "id": "8",
+      "name": "Tester de Red RJ45",
+      "description": "Tester de red para cables RJ45 con indicadores LED. Detecta cortocircuitos, circuitos abiertos y cruces.",
+      "price": 450,
+      "category": "herramientas",
+      "subcategory": "testers",
+      "sku": "TEST-RJ45",
+      "brand": "NetTech",
+      "stock": 35,
+      "image": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk0YTNiOCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPlRlc3RlciBkZSBSZWQ8L3RleHQ+PC9zdmc+",
+      "specifications": {
+        "type": "Tester RJ45",
+        "ports": "2 puertos RJ45",
+        "indicators": "8 LEDs por puerto",
+        "tests": "Cortocircuito, abierto, cruzado",
+        "power": "Batería 9V",
+        "range": "Hasta 300m"
+      },
+      "features": [
+        "Detección de cortocircuitos",
+        "Detección de circuitos abiertos",
+        "Detección de cables cruzados",
+        "Indicadores LED claros",
+        "Alcance hasta 300 metros"
+      ],
+      "tags": ["tester", "rj45", "cable", "diagnostico"]
+    }
+  ],
+  "categories": [
+    {
+      "id": "cables",
+      "name": "Cables de Red",
+      "description": "Cables de red para diferentes categorías y aplicaciones",
+      "subcategories": ["ethernet", "fiber", "coaxial"]
+    },
+    {
+      "id": "conectores",
+      "name": "Conectores",
+      "description": "Conectores y terminales para instalaciones de red",
+      "subcategories": ["rj45", "patchpanels", "adapters"]
+    },
+    {
+      "id": "equipos",
+      "name": "Equipos de Red",
+      "description": "Switches, routers y equipos de red",
+      "subcategories": ["switches", "routers", "accesspoints"]
+    },
+    {
+      "id": "herramientas",
+      "name": "Herramientas",
+      "description": "Herramientas profesionales para instalaciones",
+      "subcategories": ["crimpeadoras", "testers", "pelacables"]
+    }
+  ],
+  "blog": [
+    {
+      "id": "1",
+      "title": "Guía Completa de Instalación Cat6a",
+      "excerpt": "Aprende las mejores prácticas para instalar cableado Cat6a en proyectos comerciales.",
+      "content": "Contenido completo del artículo...",
+      "author": "Ing. Carlos Mendoza",
+      "date": "2024-01-15",
+      "category": "Instalación",
+      "tags": ["cat6a", "instalacion", "cableado"],
+      "image": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk0YTNiOCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkFydMOtY3VsbyBDYXQ2YTwvdGV4dD48L3N2Zz4="
+    },
+    {
+      "id": "2",
+      "title": "Tendencias en Infraestructura de Red 2024",
+      "excerpt": "Descubre las últimas tecnologías y tendencias en el mundo de las redes.",
+      "content": "Contenido completo del artículo...",
+      "author": "Ing. Ana García",
+      "date": "2024-01-10",
+      "category": "Tecnología",
+      "tags": ["tendencias", "2024", "tecnologia"],
+      "image": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk0YTNiOCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPlRlbmRlbmNpYXMgMjAyNDwvdGV4dD48L3N2Zz4="
+    }
+  ]
+}
