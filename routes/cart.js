@@ -5,6 +5,24 @@ const { authenticateToken, optionalAuth } = require('../middleware/auth');
 
 const router = express.Router();
 
+// Función helper para parsear JSON de forma segura
+const safeJsonParse = (jsonData, defaultValue = []) => {
+    try {
+        // Si ya es un objeto/array, devolverlo tal como está
+        if (typeof jsonData === 'object' && jsonData !== null) {
+            return jsonData;
+        }
+        // Si es string, parsearlo
+        if (typeof jsonData === 'string') {
+            return JSON.parse(jsonData || '[]');
+        }
+        return defaultValue;
+    } catch (error) {
+        console.error('Error parsing JSON:', error);
+        return defaultValue;
+    }
+};
+
 // Función para obtener o crear sesión de carrito
 const getOrCreateCartSession = async (sessionId, userId = null) => {
     let result = await db.query(
@@ -46,7 +64,10 @@ router.get('/', optionalAuth, async (req, res, next) => {
         const userId = req.user ? req.user.id : null;
 
         const cartSession = await getOrCreateCartSession(sessionId, userId);
-        const items = JSON.parse(cartSession.items);
+        console.log('🔍 Debug cartSession.items:', cartSession.items);
+        console.log('🔍 Debug cartSession.items type:', typeof cartSession.items);
+        const items = safeJsonParse(cartSession.items);
+        console.log('🔍 Debug parsed items:', items);
 
         // Obtener información completa de los productos
         if (items.length > 0) {
@@ -88,9 +109,9 @@ router.get('/', optionalAuth, async (req, res, next) => {
         res.json({
             success: true,
             data: {
-                items: JSON.parse(cartSession.items),
+                items: items,
                 total: parseFloat(cartSession.total),
-                itemCount: JSON.parse(cartSession.items).reduce((count, item) => count + item.quantity, 0)
+                itemCount: items.reduce((count, item) => count + item.quantity, 0)
             }
         });
     } catch (error) {
@@ -131,7 +152,7 @@ router.post('/add', optionalAuth, validateCartItem, async (req, res, next) => {
 
         // Obtener o crear sesión de carrito
         const cartSession = await getOrCreateCartSession(sessionId, userId);
-        let items = JSON.parse(cartSession.items);
+        let items = safeJsonParse(cartSession.items);
 
         // Verificar si el producto ya está en el carrito
         const existingItemIndex = items.findIndex(item => item.product_id === product_id);
@@ -212,7 +233,7 @@ router.put('/update', optionalAuth, validateCartItem, async (req, res, next) => 
 
         // Obtener carrito actual
         const cartSession = await getOrCreateCartSession(sessionId);
-        let items = JSON.parse(cartSession.items);
+        let items = safeJsonParse(cartSession.items);
 
         // Buscar y actualizar el item
         const itemIndex = items.findIndex(item => item.product_id === product_id);
@@ -250,7 +271,7 @@ router.delete('/remove/:product_id', optionalAuth, validateId, async (req, res, 
 
         // Obtener carrito actual
         const cartSession = await getOrCreateCartSession(sessionId);
-        let items = JSON.parse(cartSession.items);
+        let items = safeJsonParse(cartSession.items);
 
         // Filtrar el producto
         const filteredItems = items.filter(item => item.product_id !== parseInt(product_id));
@@ -306,7 +327,7 @@ router.get('/count', optionalAuth, async (req, res, next) => {
         const sessionId = req.headers['x-session-id'] || req.sessionID || 'anonymous';
 
         const cartSession = await getOrCreateCartSession(sessionId);
-        const items = JSON.parse(cartSession.items);
+        const items = safeJsonParse(cartSession.items);
         const itemCount = items.reduce((count, item) => count + item.quantity, 0);
 
         res.json({

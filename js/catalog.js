@@ -307,8 +307,15 @@ class CatalogManager {
             btn.addEventListener('click', (e) => {
                 const productId = e.target.dataset.productId;
                 const product = this.products.find(p => p.id === productId);
-                if (product && window.cart) {
-                    window.cart.addItem(product);
+                if (product) {
+                    // Esperar a que el carrito esté disponible
+                    if (window.cart) {
+                        window.cart.addItem(product);
+                    } else {
+                        // Crear carrito temporal si no existe
+                        const tempCart = new Cart();
+                        tempCart.addItem(product);
+                    }
                 }
             });
         });

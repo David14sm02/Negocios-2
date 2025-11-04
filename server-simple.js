@@ -4,23 +4,16 @@ const helmet = require('helmet');
 const compression = require('compression');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
+const path = require('path');
 require('dotenv').config({ path: './config.env' });
-
-const db = require('./config/database');
-const errorHandler = require('./middleware/errorHandler');
-const notFound = require('./middleware/notFound');
-
-// Importar rutas
-const productRoutes = require('./routes/products');
-const cartRoutes = require('./routes/cart');
-const userRoutes = require('./routes/users');
-const orderRoutes = require('./routes/orders');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware de seguridad
-app.use(helmet());
+app.use(helmet({
+    contentSecurityPolicy: false // Deshabilitar CSP para desarrollo
+}));
 app.use(compression());
 
 // Configuración de CORS
@@ -56,85 +49,63 @@ app.use('/css', express.static('css'));
 app.use('/js', express.static('js'));
 app.use('/data', express.static('data'));
 
-// Rutas de la API
-app.use('/api/products', productRoutes);
-app.use('/api/cart', cartRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/orders', orderRoutes);
-
 // Ruta de salud del servidor
 app.get('/api/health', (req, res) => {
     res.json({
         status: 'OK',
         timestamp: new Date().toISOString(),
         uptime: process.uptime(),
-        environment: process.env.NODE_ENV
+        environment: process.env.NODE_ENV || 'development'
     });
 });
 
 // Rutas para servir páginas HTML
 app.get('/', (req, res) => {
-    res.sendFile(__dirname + '/index.html');
+    res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 app.get('/catalog.html', (req, res) => {
-    res.sendFile(__dirname + '/catalog.html');
+    res.sendFile(path.join(__dirname, 'catalog.html'));
 });
 
 app.get('/blog.html', (req, res) => {
-    res.sendFile(__dirname + '/blog.html');
+    res.sendFile(path.join(__dirname, 'blog.html'));
 });
 
 app.get('/about.html', (req, res) => {
-    res.sendFile(__dirname + '/about.html');
+    res.sendFile(path.join(__dirname, 'about.html'));
 });
 
-app.get('/test-cart', (req, res) => {
-    res.sendFile(__dirname + '/test-cart.html');
+// Middleware de manejo de errores básico
+app.use((req, res) => {
+    res.status(404).json({ error: 'Página no encontrada' });
 });
-
-// Middleware de manejo de errores
-app.use(notFound);
-app.use(errorHandler);
 
 // Función para iniciar el servidor
-async function startServer() {
+function startServer() {
     try {
-        // Probar conexión a la base de datos
-        await db.testConnection();
-        console.log('✅ Conexión a PostgreSQL establecida correctamente');
-        
         // Iniciar servidor
         app.listen(PORT, () => {
             console.log(`🚀 Servidor ejecutándose en puerto ${PORT}`);
             console.log(`📱 Frontend disponible en: http://localhost:${PORT}`);
             console.log(`🔗 API disponible en: http://localhost:${PORT}/api`);
             console.log(`🏥 Health check: http://localhost:${PORT}/api/health`);
-            console.log(`🛒 Carrito funcional con base de datos`);
+            console.log(`📁 Archivos estáticos servidos desde: ${__dirname}`);
         });
     } catch (error) {
-        console.error('❌ Error al conectar con la base de datos:', error.message);
-        console.log('🔄 Iniciando servidor sin base de datos (solo archivos estáticos)');
-        
-        // Iniciar servidor sin base de datos
-        app.listen(PORT, () => {
-            console.log(`🚀 Servidor ejecutándose en puerto ${PORT} (modo estático)`);
-            console.log(`📱 Frontend disponible en: http://localhost:${PORT}`);
-            console.log(`⚠️  Carrito funcionará con localStorage (sin persistencia)`);
-        });
+        console.error('❌ Error al iniciar el servidor:', error);
+        process.exit(1);
     }
 }
 
 // Manejo de señales de terminación
-process.on('SIGTERM', async () => {
+process.on('SIGTERM', () => {
     console.log('🛑 Recibida señal SIGTERM, cerrando servidor...');
-    await db.close();
     process.exit(0);
 });
 
-process.on('SIGINT', async () => {
+process.on('SIGINT', () => {
     console.log('🛑 Recibida señal SIGINT, cerrando servidor...');
-    await db.close();
     process.exit(0);
 });
 

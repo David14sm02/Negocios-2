@@ -398,7 +398,7 @@ class ECommerceApp {
     // Configurar autenticación
     setupAuthentication() {
         // Verificar si hay un token válido al cargar la página
-        if (this.apiClient.isAuthenticated()) {
+        if (this.apiClient && this.apiClient.isAuthenticated()) {
             this.updateAuthUI(true);
         } else {
             this.updateAuthUI(false);

@@ -9,7 +9,14 @@ class Cart {
 
     async init() {
         this.bindEvents();
-        await this.loadCartFromAPI();
+        // Esperar a que apiClient esté disponible
+        if (this.apiClient) {
+            await this.loadCartFromAPI();
+        } else {
+            // Fallback a localStorage si apiClient no está disponible
+            this.items = this.loadFromStorage();
+            this.total = this.getTotal();
+        }
         this.updateCartDisplay();
     }
 
@@ -52,6 +59,9 @@ class Cart {
     // Cargar carrito desde la API
     async loadCartFromAPI() {
         try {
+            if (!this.apiClient) {
+                throw new Error('API client no disponible');
+            }
             const response = await this.apiClient.getCart();
             this.items = response.data.items;
             this.total = response.data.total;
@@ -66,15 +76,43 @@ class Cart {
     // Agregar producto al carrito
     async addItem(product, quantity = 1) {
         try {
-            const response = await this.apiClient.addToCart(product.id, quantity);
-            this.items = response.data.items;
-            this.total = response.data.total;
+            if (this.apiClient) {
+                const response = await this.apiClient.addToCart(product.id, quantity);
+                this.items = response.data.items;
+                this.total = response.data.total;
+            } else {
+                // Fallback a localStorage si API no está disponible
+                this.addItemToLocalStorage(product, quantity);
+            }
             this.updateCartDisplay();
             Utils.showToast(`${product.name} agregado al carrito`, 'success');
         } catch (error) {
             console.error('Error al agregar al carrito:', error);
-            Utils.showToast(error.message || 'Error al agregar producto', 'error');
+            // Fallback a localStorage en caso de error
+            this.addItemToLocalStorage(product, quantity);
+            this.updateCartDisplay();
+            Utils.showToast(`${product.name} agregado al carrito (modo offline)`, 'info');
         }
+    }
+
+    // Agregar producto al localStorage (fallback)
+    addItemToLocalStorage(product, quantity = 1) {
+        const existingItem = this.items.find(item => item.id === product.id);
+        
+        if (existingItem) {
+            existingItem.quantity += quantity;
+        } else {
+            this.items.push({
+                id: product.id,
+                name: product.name,
+                price: product.price,
+                quantity: quantity,
+                image: product.image,
+                sku: product.sku
+            });
+        }
+        
+        this.saveToStorage();
     }
 
     // Remover producto del carrito
@@ -327,7 +365,16 @@ class Cart {
 
 // Inicializar carrito cuando se carga la página
 document.addEventListener('DOMContentLoaded', () => {
-    window.cart = new Cart();
+    // Esperar a que apiClient esté disponible
+    const initCart = () => {
+        if (window.apiClient) {
+            window.cart = new Cart();
+        } else {
+            // Reintentar después de un breve delay
+            setTimeout(initCart, 100);
+        }
+    };
+    initCart();
 });
 
 // Exportar para uso global

@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NetTech Solutions - Test Carrito</title>
+    <link rel="stylesheet" href="css/colors.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-server"></i>
+                    <span>NetTech Solutions</span>
+                </div>
+                
+                <nav class="nav">
+                    <a href="#" class="nav-link">Inicio</a>
+                    <a href="#" class="nav-link">Catálogo</a>
+                    <a href="#" class="nav-link">Blog</a>
+                    <a href="#" class="nav-link">Acerca de</a>
+                </nav>
+                
+                <div class="header-actions">
+                    <div class="search-box">
+                        <input type="text" id="searchInput" placeholder="Buscar productos...">
+                        <button id="searchBtn" class="search-btn">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                    
+                    <button class="cart-icon" id="cartIcon">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="cart-count" id="cartCount">0</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="test-section">
+                <h1>🧪 Test del Carrito de Compras</h1>
+                <p>Esta página prueba la funcionalidad del carrito de compras.</p>
+                
+                <div class="test-controls">
+                    <button id="testAddProduct" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Agregar Producto de Prueba
+                    </button>
+                    <button id="testClearCart" class="btn btn-secondary">
+                        <i class="fas fa-trash"></i> Limpiar Carrito
+                    </button>
+                    <button id="testShowCart" class="btn btn-accent">
+                        <i class="fas fa-eye"></i> Mostrar Carrito
+                    </button>
+                </div>
+                
+                <div class="test-results" id="testResults">
+                    <h3>Resultados de las Pruebas:</h3>
+                    <div id="testOutput"></div>
+                </div>
+            </div>
+            
+            <div class="products-section">
+                <h2>Productos de Prueba</h2>
+                <div class="products-grid" id="testProducts">
+                    <!-- Productos se cargarán dinámicamente -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Cart Sidebar -->
+    <div class="cart-sidebar" id="cartSidebar">
+        <div class="cart-header">
+            <h3>Carrito de Compras</h3>
+            <button class="cart-close" id="cartClose">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="cart-content" id="cartContent">
+            <div class="cart-empty" id="cartEmpty">
+                <i class="fas fa-shopping-cart"></i>
+                <p>Tu carrito está vacío</p>
+            </div>
+            
+            <div class="cart-items" id="cartItems">
+                <!-- Items del carrito se cargarán aquí -->
+            </div>
+        </div>
+        
+        <div class="cart-footer" id="cartFooter">
+            <div class="cart-total">
+                <span>Total:</span>
+                <span class="total-amount" id="totalAmount">$0.00</span>
+            </div>
+            <button class="btn btn-primary btn-full" id="checkoutBtn">
+                Proceder al Pago
+            </button>
+        </div>
+    </div>
+
+    <!-- Cart Overlay -->
+    <div class="cart-overlay" id="cartOverlay"></div>
+
+    <!-- JavaScript -->
+    <script src="js/utils.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/test-cart.js"></script>
+    <script>
+        // Test del carrito
+        document.addEventListener('DOMContentLoaded', () => {
+            const testOutput = document.getElementById('testOutput');
+            const testProducts = document.getElementById('testProducts');
+            
+            // Productos de prueba
+            const testProductsData = [
+                {
+                    id: 1,
+                    name: 'Cable Cat6 UTP 305m',
+                    price: 2500,
+                    sku: 'CAT6-305M',
+                    image: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk0YTNiOCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkNhYmxlIENhdDY8L3RleHQ+PC9zdmc+'
+                },
+                {
+                    id: 2,
+                    name: 'Conectores RJ45 Cat6',
+                    price: 150,
+                    sku: 'RJ45-CAT6',
+                    image: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk0YTNiOCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkNvbmVjdG9yPC90ZXh0Pjwvc3ZnPg=='
+                }
+            ];
+            
+            // Renderizar productos de prueba
+            testProducts.innerHTML = testProductsData.map(product => `
+                <div class="product-card">
+                    <div class="product-image">
+                        <img src="${product.image}" alt="${product.name}">
+                    </div>
+                    <div class="product-content">
+                        <h3 class="product-title">${product.name}</h3>
+                        <div class="product-price">${Utils.formatPrice(product.price)}</div>
+                        <div class="product-actions">
+                            <button class="btn-add-cart" data-product-id="${product.id}">
+                                <i class="fas fa-cart-plus"></i> Agregar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            // Test 1: Verificar que el carrito se inicializa
+            function testCartInitialization() {
+                try {
+                    if (window.cart && window.cart.items) {
+                        addTestResult('✅ Carrito inicializado correctamente', 'success');
+                        return true;
+                    } else {
+                        addTestResult('❌ Error: Carrito no inicializado', 'error');
+                        return false;
+                    }
+                } catch (error) {
+                    addTestResult(`❌ Error: ${error.message}`, 'error');
+                    return false;
+                }
+            }
+            
+            // Test 2: Agregar producto al carrito
+            function testAddProduct() {
+                try {
+                    const product = testProductsData[0];
+                    window.cart.addItem(product, 1);
+                    addTestResult(`✅ Producto "${product.name}" agregado al carrito`, 'success');
+                    return true;
+                } catch (error) {
+                    addTestResult(`❌ Error agregando producto: ${error.message}`, 'error');
+                    return false;
+                }
+            }
+            
+            // Test 3: Verificar actualización del contador
+            function testCartCounter() {
+                try {
+                    const cartCount = document.getElementById('cartCount');
+                    if (cartCount && parseInt(cartCount.textContent) > 0) {
+                        addTestResult('✅ Contador del carrito actualizado', 'success');
+                        return true;
+                    } else {
+                        addTestResult('❌ Error: Contador no actualizado', 'error');
+                        return false;
+                    }
+                } catch (error) {
+                    addTestResult(`❌ Error: ${error.message}`, 'error');
+                    return false;
+                }
+            }
+            
+            // Test 4: Limpiar carrito
+            function testClearCart() {
+                try {
+                    window.cart.clearCart();
+                    addTestResult('✅ Carrito limpiado correctamente', 'success');
+                    return true;
+                } catch (error) {
+                    addTestResult(`❌ Error limpiando carrito: ${error.message}`, 'error');
+                    return false;
+                }
+            }
+            
+            // Función para agregar resultado de prueba
+            function addTestResult(message, type) {
+                const testOutput = document.getElementById('testOutput');
+                const resultDiv = document.createElement('div');
+                resultDiv.className = `test-result ${type}`;
+                resultDiv.innerHTML = `<span class="test-time">${new Date().toLocaleTimeString()}</span> - ${message}`;
+                testOutput.appendChild(resultDiv);
+            }
+            
+            // Ejecutar pruebas automáticamente
+            setTimeout(() => {
+                addTestResult('🧪 Iniciando pruebas del carrito...', 'info');
+                testCartInitialization();
+            }, 1000);
+            
+            // Botones de prueba
+            document.getElementById('testAddProduct').addEventListener('click', () => {
+                testAddProduct();
+                setTimeout(testCartCounter, 100);
+            });
+            
+            document.getElementById('testClearCart').addEventListener('click', () => {
+                testClearCart();
+                setTimeout(() => {
+                    const cartCount = document.getElementById('cartCount');
+                    if (cartCount && parseInt(cartCount.textContent) === 0) {
+                        addTestResult('✅ Contador reseteado correctamente', 'success');
+                    } else {
+                        addTestResult('❌ Error: Contador no se reseteó', 'error');
+                    }
+                }, 100);
+            });
+            
+            document.getElementById('testShowCart').addEventListener('click', () => {
+                window.cart.openCart();
+                addTestResult('✅ Carrito abierto correctamente', 'success');
+            });
+        });
+    </script>
+</body>
+</html>
