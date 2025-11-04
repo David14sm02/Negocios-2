@@ -63,8 +63,12 @@ class Cart {
                 throw new Error('API client no disponible');
             }
             const response = await this.apiClient.getCart();
-            this.items = response.data.items;
-            this.total = response.data.total;
+            if (response.success && response.data) {
+                this.items = response.data.items || [];
+                this.total = response.data.total || 0;
+            } else {
+                throw new Error('Respuesta inválida de la API');
+            }
         } catch (error) {
             console.error('Error al cargar carrito:', error);
             // Fallback a localStorage
@@ -77,21 +81,79 @@ class Cart {
     async addItem(product, quantity = 1) {
         try {
             if (this.apiClient) {
-                const response = await this.apiClient.addToCart(product.id, quantity);
-                this.items = response.data.items;
-                this.total = response.data.total;
+                let productId = product.id || product.product_id;
+                
+                // Si no hay productId pero tenemos SKU, buscar primero por SKU
+                if (!productId && product.sku) {
+                    try {
+                        const productsResponse = await this.apiClient.getProducts({ limit: 100 });
+                        if (productsResponse.success && productsResponse.data) {
+                            const productsArray = Array.isArray(productsResponse.data) ? productsResponse.data : productsResponse.data.products || [];
+                            const foundProduct = productsArray.find(p => p.sku === product.sku);
+                            if (foundProduct) {
+                                productId = foundProduct.id;
+                                console.log(`✅ Producto encontrado por SKU: ${product.sku} -> ID: ${productId}`);
+                            }
+                        }
+                    } catch (skuError) {
+                        console.warn('No se pudo buscar producto por SKU:', skuError);
+                    }
+                }
+
+                if (!productId) {
+                    throw new Error('ID de producto no disponible');
+                }
+
+                const response = await this.apiClient.addToCart(productId, quantity);
+                if (response.success && response.data) {
+                    this.items = response.data.items || [];
+                    this.total = response.data.total || 0;
+                    this.updateCartDisplay();
+                    Utils.showToast(`${product.name} agregado al carrito`, 'success');
+                    return;
+                } else {
+                    throw new Error('Respuesta inválida del servidor');
+                }
             } else {
-                // Fallback a localStorage si API no está disponible
-                this.addItemToLocalStorage(product, quantity);
+                throw new Error('API client no disponible');
             }
-            this.updateCartDisplay();
-            Utils.showToast(`${product.name} agregado al carrito`, 'success');
         } catch (error) {
             console.error('Error al agregar al carrito:', error);
-            // Fallback a localStorage en caso de error
-            this.addItemToLocalStorage(product, quantity);
-            this.updateCartDisplay();
-            Utils.showToast(`${product.name} agregado al carrito (modo offline)`, 'info');
+            
+            // Fallback a localStorage solo si realmente no hay conexión
+            if (error.message.includes('404') || error.message.includes('Producto no encontrado')) {
+                // Si el error es 404, intentar buscar por SKU una vez más
+                if (product.sku && this.apiClient) {
+                    try {
+                        const productsResponse = await this.apiClient.getProducts({ limit: 100 });
+                        if (productsResponse.success && productsResponse.data) {
+                            const productsArray = Array.isArray(productsResponse.data) ? productsResponse.data : productsResponse.data.products || [];
+                            const foundProduct = productsArray.find(p => p.sku === product.sku);
+                            if (foundProduct) {
+                                console.log(`🔄 Reintentando con ID correcto por SKU: ${product.sku} -> ${foundProduct.id}`);
+                                const retryResponse = await this.apiClient.addToCart(foundProduct.id, quantity);
+                                if (retryResponse.success && retryResponse.data) {
+                                    this.items = retryResponse.data.items || [];
+                                    this.total = retryResponse.data.total || 0;
+                                    this.updateCartDisplay();
+                                    Utils.showToast(`${product.name} agregado al carrito`, 'success');
+                                    return;
+                                }
+                            }
+                        }
+                    } catch (retryError) {
+                        console.error('Error en reintento por SKU:', retryError);
+                    }
+                }
+                
+                Utils.showToast(`Error: No se pudo agregar ${product.name}. Verifique la conexión.`, 'error');
+            } else {
+                // Para otros errores, usar localStorage
+                this.addItemToLocalStorage(product, quantity);
+                this.total = this.getTotal();
+                this.updateCartDisplay();
+                Utils.showToast(`${product.name} agregado al carrito (modo offline)`, 'info');
+            }
         }
     }
 
@@ -116,24 +178,70 @@ class Cart {
     }
 
     // Remover producto del carrito
-    removeItem(productId) {
-        this.items = this.items.filter(item => item.id !== productId);
-        this.saveToStorage();
-        this.updateCartDisplay();
-        Utils.showToast('Producto removido del carrito', 'info');
+    async removeItem(productId) {
+        try {
+            if (this.apiClient) {
+                const response = await this.apiClient.removeFromCart(productId);
+                if (response.success && response.data) {
+                    this.items = response.data.items || [];
+                    this.total = response.data.total || 0;
+                } else {
+                    throw new Error('Respuesta inválida del servidor');
+                }
+                this.updateCartDisplay();
+                Utils.showToast('Producto removido del carrito', 'success');
+            } else {
+                // Fallback a localStorage
+                this.items = this.items.filter(item => {
+                    const itemId = item.id || item.product_id;
+                    return itemId !== productId && itemId !== parseInt(productId);
+                });
+                this.total = this.getTotal();
+                this.saveToStorage();
+                this.updateCartDisplay();
+                Utils.showToast('Producto removido del carrito', 'info');
+            }
+        } catch (error) {
+            console.error('Error al remover del carrito:', error);
+            const errorMessage = error.message || 'Error al remover producto del carrito';
+            Utils.showToast(errorMessage, 'error');
+        }
     }
 
     // Actualizar cantidad de producto
-    updateQuantity(productId, quantity) {
-        const item = this.items.find(item => item.id === productId);
-        if (item) {
+    async updateQuantity(productId, quantity) {
+        try {
             if (quantity <= 0) {
-                this.removeItem(productId);
-            } else {
-                item.quantity = quantity;
-                this.saveToStorage();
-                this.updateCartDisplay();
+                await this.removeItem(productId);
+                return;
             }
+
+            if (this.apiClient) {
+                const response = await this.apiClient.updateCartItem(productId, quantity);
+                if (response.success && response.data) {
+                    this.items = response.data.items || [];
+                    this.total = response.data.total || 0;
+                } else {
+                    throw new Error('Respuesta inválida del servidor');
+                }
+                this.updateCartDisplay();
+            } else {
+                // Fallback a localStorage
+                const item = this.items.find(item => {
+                    const itemId = item.id || item.product_id;
+                    return itemId === productId || itemId === parseInt(productId);
+                });
+                if (item) {
+                    item.quantity = quantity;
+                    this.total = this.getTotal();
+                    this.saveToStorage();
+                    this.updateCartDisplay();
+                }
+            }
+        } catch (error) {
+            console.error('Error al actualizar cantidad:', error);
+            const errorMessage = error.message || 'Error al actualizar cantidad';
+            Utils.showToast(errorMessage, 'error');
         }
     }
 
@@ -185,25 +293,31 @@ class Cart {
                 </div>
             `;
         } else {
-            cartContent.innerHTML = this.items.map(item => `
-                <div class="cart-item" data-product-id="${item.id}">
+            cartContent.innerHTML = this.items.map(item => {
+                // Manejar tanto id como product_id del backend
+                const productId = item.product_id || item.id;
+                const imageUrl = item.image_url || item.image;
+                
+                return `
+                <div class="cart-item" data-product-id="${productId}">
                     <div class="cart-item-image">
-                        <img src="${item.image || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIGZpbGw9IiNmM2Y0ZjYiLz48dGV4dCB4PSIzMiIgeT0iMzIiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxMiIgZmlsbD0iIzk0YTNiOCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlbjwvdGV4dD48L3N2Zz4='}" alt="${item.name}">
+                        <img src="${imageUrl || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIGZpbGw9IiNmM2Y0ZjYiLz48dGV4dCB4PSIzMiIgeT0iMzIiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxMiIgZmlsbD0iIzk0YTNiOCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlbjwvdGV4dD48L3N2Zz4='}" alt="${item.name}">
                     </div>
                     <div class="cart-item-details">
                         <h4>${item.name}</h4>
                         <p class="cart-item-price">${Utils.formatPrice(item.price)}</p>
                         <div class="cart-item-controls">
-                            <button class="btn-quantity" data-action="decrease" data-product-id="${item.id}">-</button>
+                            <button class="btn-quantity" data-action="decrease" data-product-id="${productId}">-</button>
                             <span class="cart-item-quantity">${item.quantity}</span>
-                            <button class="btn-quantity" data-action="increase" data-product-id="${item.id}">+</button>
-                            <button class="btn-remove" data-product-id="${item.id}">
+                            <button class="btn-quantity" data-action="increase" data-product-id="${productId}">+</button>
+                            <button class="btn-remove" data-product-id="${productId}">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </div>
                     </div>
                 </div>
-            `).join('');
+            `;
+            }).join('');
 
             // Bind eventos para controles del carrito
             this.bindCartItemEvents();
@@ -216,21 +330,32 @@ class Cart {
         if (!cartContent) return;
 
         cartContent.addEventListener('click', (e) => {
-            const productId = e.target.dataset.productId;
-            const action = e.target.dataset.action;
+            // Obtener el productId del botón clickeado o de su contenedor
+            const button = e.target.closest('[data-product-id]');
+            if (!button) return;
 
+            const productId = button.dataset.productId;
+            const action = button.dataset.action;
+
+            // Buscar el item por product_id o id
+            const item = this.items.find(item => {
+                const itemId = item.product_id || item.id;
+                return itemId == productId;
+            });
+
+            // Asegurar que productId sea un número
+            const productIdNum = parseInt(productId);
+            
             if (action === 'increase') {
-                const item = this.items.find(item => item.id === productId);
                 if (item) {
-                    this.updateQuantity(productId, item.quantity + 1);
+                    this.updateQuantity(productIdNum, item.quantity + 1);
                 }
             } else if (action === 'decrease') {
-                const item = this.items.find(item => item.id === productId);
                 if (item) {
-                    this.updateQuantity(productId, item.quantity - 1);
+                    this.updateQuantity(productIdNum, item.quantity - 1);
                 }
             } else if (e.target.classList.contains('btn-remove') || e.target.closest('.btn-remove')) {
-                this.removeItem(productId);
+                this.removeItem(productIdNum);
             }
         });
     }
@@ -241,7 +366,9 @@ class Cart {
         const checkoutBtn = document.getElementById('checkoutBtn');
         
         if (cartTotal) {
-            cartTotal.textContent = Utils.formatPrice(this.getTotal());
+            // Usar el total del backend si está disponible, sino calcularlo
+            const total = this.total !== undefined ? this.total : this.getTotal();
+            cartTotal.textContent = Utils.formatPrice(total);
         }
 
         if (checkoutBtn) {

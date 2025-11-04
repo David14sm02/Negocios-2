@@ -1,6 +1,6 @@
 const express = require('express');
 const db = require('../config/database');
-const { validateCartItem, validateId } = require('../middleware/validation');
+const { validateCartItem, validateId, validateProductId } = require('../middleware/validation');
 const { authenticateToken, optionalAuth } = require('../middleware/auth');
 
 const router = express.Router();
@@ -154,8 +154,12 @@ router.post('/add', optionalAuth, validateCartItem, async (req, res, next) => {
         const cartSession = await getOrCreateCartSession(sessionId, userId);
         let items = safeJsonParse(cartSession.items);
 
-        // Verificar si el producto ya está en el carrito
-        const existingItemIndex = items.findIndex(item => item.product_id === product_id);
+        // Verificar si el producto ya está en el carrito (manejar comparación de tipos)
+        const productIdNum = parseInt(product_id);
+        const existingItemIndex = items.findIndex(item => {
+            const itemProductId = parseInt(item.product_id);
+            return itemProductId === productIdNum;
+        });
 
         if (existingItemIndex >= 0) {
             // Actualizar cantidad
@@ -235,8 +239,12 @@ router.put('/update', optionalAuth, validateCartItem, async (req, res, next) => 
         const cartSession = await getOrCreateCartSession(sessionId);
         let items = safeJsonParse(cartSession.items);
 
-        // Buscar y actualizar el item
-        const itemIndex = items.findIndex(item => item.product_id === product_id);
+        // Buscar y actualizar el item (manejar comparación de tipos)
+        const productIdNum = parseInt(product_id);
+        const itemIndex = items.findIndex(item => {
+            const itemProductId = parseInt(item.product_id);
+            return itemProductId === productIdNum;
+        });
         
         if (itemIndex === -1) {
             return res.status(404).json({
@@ -264,7 +272,7 @@ router.put('/update', optionalAuth, validateCartItem, async (req, res, next) => 
 });
 
 // DELETE /api/cart/remove/:product_id - Remover producto del carrito
-router.delete('/remove/:product_id', optionalAuth, validateId, async (req, res, next) => {
+router.delete('/remove/:product_id', optionalAuth, validateProductId, async (req, res, next) => {
     try {
         const { product_id } = req.params;
         const sessionId = req.headers['x-session-id'] || req.sessionID || 'anonymous';
@@ -273,8 +281,12 @@ router.delete('/remove/:product_id', optionalAuth, validateId, async (req, res, 
         const cartSession = await getOrCreateCartSession(sessionId);
         let items = safeJsonParse(cartSession.items);
 
-        // Filtrar el producto
-        const filteredItems = items.filter(item => item.product_id !== parseInt(product_id));
+        // Filtrar el producto (manejar comparación de tipos)
+        const productIdNum = parseInt(product_id);
+        const filteredItems = items.filter(item => {
+            const itemProductId = parseInt(item.product_id);
+            return itemProductId !== productIdNum;
+        });
         
         if (filteredItems.length === items.length) {
             return res.status(404).json({

@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalles del Producto - NetTech Solutions</title>
+    <meta name="description" content="Detalles completos del producto con especificaciones técnicas y características.">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/colors.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <!-- Logo -->
+                <div class="logo">
+                    <a href="index.html">
+                        <i class="fas fa-network-wired"></i>
+                        <span>NetTech Solutions</span>
+                    </a>
+                </div>
+                
+                <!-- Navigation -->
+                <nav class="nav">
+                    <ul class="nav-list">
+                        <li><a href="index.html" class="nav-link">Inicio</a></li>
+                        <li><a href="catalog.html" class="nav-link">Catálogo</a></li>
+                        <li><a href="blog.html" class="nav-link">Blog</a></li>
+                        <li><a href="about.html" class="nav-link">Acerca de</a></li>
+                    </ul>
+                </nav>
+                
+                <!-- Header Actions -->
+                <div class="header-actions">
+                    <div class="search-box">
+                        <input type="text" placeholder="Buscar productos..." id="searchInput">
+                        <button type="button" id="searchBtn">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="cart-icon" id="cartIcon">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="cart-count" id="cartCount">0</span>
+                    </div>
+                    
+                    <button class="mobile-menu-btn" id="mobileMenuBtn">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Breadcrumbs -->
+    <div class="container">
+        <nav class="breadcrumbs">
+            <a href="index.html">Inicio</a>
+            <span class="separator">/</span>
+            <a href="catalog.html">Catálogo</a>
+            <span class="separator">/</span>
+            <span class="current" id="productBreadcrumb">Producto</span>
+        </nav>
+    </div>
+
+    <!-- Product Detail Section -->
+    <section class="product-detail">
+        <div class="container">
+            <!-- Loading State -->
+            <div id="loadingState" class="loading-container">
+                <div class="spinner"></div>
+                <p>Cargando producto...</p>
+            </div>
+
+            <!-- Error State -->
+            <div id="errorState" class="error-container" style="display: none;">
+                <i class="fas fa-exclamation-circle"></i>
+                <h2>Producto no encontrado</h2>
+                <p>El producto que buscas no existe o ha sido removido.</p>
+                <a href="catalog.html" class="btn btn-primary">Volver al Catálogo</a>
+            </div>
+
+            <!-- Product Content -->
+            <div id="productContent" style="display: none;">
+                <div class="product-detail-content">
+                    <!-- Product Image -->
+                    <div class="product-detail-image">
+                        <img id="productImage" src="" alt="" loading="lazy">
+                        <div id="stockBadge" class="stock-badge" style="display: none;"></div>
+                    </div>
+
+                    <!-- Product Info -->
+                    <div class="product-detail-info">
+                        <h1 id="productName"></h1>
+                        <div class="product-meta">
+                            <span class="product-sku" id="productSku"></span>
+                            <span class="product-category" id="productCategory"></span>
+                        </div>
+                        <div class="product-price" id="productPrice"></div>
+                        <div class="product-stock" id="productStock"></div>
+                        
+                        <div class="product-description" id="productDescription"></div>
+
+                        <div class="product-actions">
+                            <div class="quantity-selector">
+                                <button class="btn-quantity" id="decreaseQty">-</button>
+                                <input type="number" id="productQuantity" value="1" min="1" max="100">
+                                <button class="btn-quantity" id="increaseQty">+</button>
+                            </div>
+                            <button class="btn btn-primary btn-add-cart-detail" id="addToCartBtn">
+                                <i class="fas fa-cart-plus"></i> Agregar al Carrito
+                            </button>
+                        </div>
+
+                        <!-- Product Features -->
+                        <div id="productFeatures" class="product-features" style="display: none;">
+                            <h3>Características</h3>
+                            <ul id="featuresList"></ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Product Specifications -->
+                <div id="productSpecifications" class="product-specifications" style="display: none;">
+                    <h2>Especificaciones Técnicas</h2>
+                    <div class="specifications-grid" id="specificationsGrid"></div>
+                </div>
+
+                <!-- Product Tags -->
+                <div id="productTags" class="product-tags" style="display: none;">
+                    <h3>Etiquetas</h3>
+                    <div class="tags-container" id="tagsContainer"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <i class="fas fa-network-wired"></i>
+                        <span>NetTech Solutions</span>
+                    </div>
+                    <p>Especialistas en productos para instalaciones de redes profesionales.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Enlaces Rápidos</h4>
+                    <ul>
+                        <li><a href="catalog.html">Catálogo</a></li>
+                        <li><a href="blog.html">Blog</a></li>
+                        <li><a href="about.html">Acerca de</a></li>
+                        <li><a href="#contact">Contacto</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Categorías</h4>
+                    <ul>
+                        <li><a href="catalog.html?category=cables">Cables de Red</a></li>
+                        <li><a href="catalog.html?category=conectores">Conectores</a></li>
+                        <li><a href="catalog.html?category=equipos">Equipos</a></li>
+                        <li><a href="catalog.html?category=herramientas">Herramientas</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Contacto</h4>
+                    <div class="contact-info">
+                        <p><i class="fas fa-phone"></i> +1 (555) 123-4567</p>
+                        <p><i class="fas fa-envelope"></i> info@nettechsolutions.com</p>
+                        <p><i class="fas fa-map-marker-alt"></i> Ciudad, País</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2024 NetTech Solutions. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Cart Sidebar -->
+    <div class="cart-sidebar" id="cartSidebar">
+        <div class="cart-header">
+            <h3>Carrito de Compras</h3>
+            <button class="cart-close" id="cartClose">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="cart-content" id="cartContent">
+            <div class="cart-empty">
+                <i class="fas fa-shopping-cart"></i>
+                <p>Tu carrito está vacío</p>
+            </div>
+        </div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>Total: $<span id="cartTotal">0.00</span></span>
+            </div>
+            <button class="btn btn-primary cart-checkout" id="checkoutBtn" disabled>
+                Proceder al Pago
+            </button>
+        </div>
+    </div>
+
+    <!-- Cart Overlay -->
+    <div class="cart-overlay" id="cartOverlay"></div>
+
+    <!-- JavaScript -->
+    <script src="js/utils.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/product-detail.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

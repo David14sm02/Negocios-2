@@ -129,6 +129,10 @@ app.get('/about.html', (req, res) => {
     res.sendFile(path.join(publicPath, 'about.html'));
 });
 
+app.get('/product-detail.html', (req, res) => {
+    res.sendFile(path.join(publicPath, 'product-detail.html'));
+});
+
 app.get('/test-cart', (req, res) => {
     res.sendFile(path.join(publicPath, 'test-cart.html'));
 });

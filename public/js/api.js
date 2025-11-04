@@ -101,7 +101,12 @@ class ApiClient {
     }
 
     async getProduct(id) {
-        return this.get(`/products/${id}`);
+        // Asegurar que id sea un número válido
+        const productId = parseInt(id);
+        if (isNaN(productId) || productId < 1) {
+            throw new Error('ID de producto inválido');
+        }
+        return this.get(`/products/${productId}`);
     }
 
     async getProductsByCategory(categoryId, params = {}) {
@@ -122,15 +127,21 @@ class ApiClient {
     }
 
     async addToCart(productId, quantity = 1) {
-        return this.post('/cart/add', { product_id: productId, quantity });
+        // Asegurar que productId sea un número
+        const productIdNum = typeof productId === 'string' ? parseInt(productId) : productId;
+        return this.post('/cart/add', { product_id: productIdNum, quantity });
     }
 
     async updateCartItem(productId, quantity) {
-        return this.put('/cart/update', { product_id: productId, quantity });
+        // Asegurar que productId sea un número
+        const productIdNum = typeof productId === 'string' ? parseInt(productId) : productId;
+        return this.put('/cart/update', { product_id: productIdNum, quantity });
     }
 
     async removeFromCart(productId) {
-        return this.delete(`/cart/remove/${productId}`);
+        // Asegurar que productId sea un número
+        const productIdNum = typeof productId === 'string' ? parseInt(productId) : productId;
+        return this.delete(`/cart/remove/${productIdNum}`);
     }
 
     async clearCart() {

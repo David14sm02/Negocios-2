@@ -103,6 +103,14 @@ const validateId = [
     handleValidationErrors
 ];
 
+// Validación para product_id en parámetros
+const validateProductId = [
+    param('product_id')
+        .isInt({ min: 1 })
+        .withMessage('ID de producto inválido'),
+    handleValidationErrors
+];
+
 // Validaciones para consultas de búsqueda
 const validateSearch = [
     query('page')
@@ -140,6 +148,7 @@ module.exports = {
     validateUser,
     validateOrder,
     validateId,
+    validateProductId,
     validateSearch,
     validateCartItem,
     handleValidationErrors

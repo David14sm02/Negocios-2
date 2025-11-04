@@ -41,7 +41,13 @@ class ECommerceApp {
             const response = await this.apiClient.getFeaturedProducts(4);
             const products = response.data;
             
-            featuredProductsContainer.innerHTML = products.map(product => `
+            // Validar que todos los productos tengan IDs válidos
+            const validProducts = products.filter(p => {
+                const productId = parseInt(p.id);
+                return !isNaN(productId) && productId > 0;
+            });
+            
+            featuredProductsContainer.innerHTML = validProducts.map(product => `
                 <div class="product-card">
                     <div class="product-image">
                         <img src="${product.image_url || this.getDefaultImage()}" alt="${product.name}" loading="lazy">
@@ -57,13 +63,15 @@ class ECommerceApp {
                             <button class="btn-add-cart" data-product-id="${product.id}">
                                 <i class="fas fa-cart-plus"></i> Agregar
                             </button>
-                            <button class="btn-view" onclick="window.location.href='catalog.html?id=${product.id}'">
+                            <button class="btn-view" data-product-id="${product.id}">
                                 Ver Detalles
                             </button>
                         </div>
                     </div>
                 </div>
             `).join('');
+            
+            this.bindFeaturedProductEvents();
         } catch (error) {
             console.error('Error al cargar productos destacados:', error);
             // Fallback a productos mock
@@ -81,14 +89,67 @@ class ECommerceApp {
                             <button class="btn-add-cart" data-product-id="${product.id}">
                                 <i class="fas fa-cart-plus"></i> Agregar
                             </button>
-                            <button class="btn-view" onclick="window.location.href='catalog.html?id=${product.id}'">
+                            <button class="btn-view" data-product-id="${product.id}">
                                 Ver Detalles
                             </button>
                         </div>
                     </div>
                 </div>
             `).join('');
+            
+            this.bindFeaturedProductEvents();
         }
+    }
+
+    // Bind eventos de productos destacados
+    bindFeaturedProductEvents() {
+        const featuredContainer = document.getElementById('featuredProducts');
+        if (!featuredContainer) return;
+
+        // Delegación de eventos para botones agregar al carrito
+        featuredContainer.addEventListener('click', (e) => {
+            const addCartBtn = e.target.closest('.btn-add-cart');
+            const viewBtn = e.target.closest('.btn-view');
+
+            if (addCartBtn) {
+                e.preventDefault();
+                const productId = addCartBtn.dataset.productId;
+                
+                if (window.apiClient) {
+                    window.apiClient.getProduct(productId).then(response => {
+                        if (response.success && response.data) {
+                            const product = response.data;
+                            if (window.cart) {
+                                window.cart.addItem({
+                                    id: product.id,
+                                    name: product.name,
+                                    price: product.price,
+                                    sku: product.sku,
+                                    stock: product.stock,
+                                    image_url: product.image_url,
+                                    image: product.image_url
+                                });
+                            }
+                        }
+                    }).catch(error => {
+                        console.error('Error al obtener producto:', error);
+                    });
+                }
+                            } else if (viewBtn) {
+                    e.preventDefault();
+                    const productId = viewBtn.dataset.productId;
+                    if (productId) {
+                        // Asegurar que el ID sea un número válido
+                        const id = parseInt(productId);
+                        if (!isNaN(id) && id > 0) {
+                            window.location.href = `product-detail.html?id=${id}`;
+                        } else {
+                            console.error('ID de producto inválido:', productId);
+                            Utils.showToast('Error: ID de producto inválido', 'error');
+                        }
+                    }
+                }
+        });
     }
 
     // Configurar búsqueda

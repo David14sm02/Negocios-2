@@ -20,18 +20,125 @@ class CatalogManager {
         this.updateProductsCount();
     }
 
-    // Cargar productos desde JSON
+    // Cargar productos desde la API o JSON como fallback
     async loadProducts() {
+        try {
+            // Intentar cargar desde la API primero
+            if (window.apiClient) {
+                const response = await window.apiClient.getProducts({ limit: 100 });
+                if (response.success && response.data) {
+                    // La API devuelve un array directamente en response.data (result.rows)
+                    const productsArray = Array.isArray(response.data) ? response.data : [];
+                    
+                    // Normalizar productos de la API
+                    this.products = productsArray.map(p => {
+                        // Asegurar que el ID sea un número válido
+                        const productId = parseInt(p.id);
+                        if (isNaN(productId) || productId < 1) {
+                            console.warn('Producto con ID inválido ignorado:', p);
+                            return null;
+                        }
+                        return {
+                            id: productId.toString(),
+                            name: p.name,
+                            description: p.description || '',
+                            price: parseFloat(p.price),
+                            category: (p.category_name || '').toLowerCase() || 'otros',
+                            sku: p.sku,
+                            stock: p.stock || 0,
+                            image: p.image_url || this.getPlaceholderImage(p.name)
+                        };
+                    }).filter(p => p !== null); // Filtrar productos inválidos
+                    this.filteredProducts = [...this.products];
+                    console.log(`✅ Cargados ${this.products.length} productos desde la API`);
+                    console.log('IDs de productos:', this.products.map(p => p.id).join(', '));
+                    return;
+                }
+            }
+        } catch (error) {
+            console.warn('No se pudieron cargar productos desde la API, usando JSON como fallback:', error);
+        }
+
+        // Fallback: cargar desde JSON y mapear IDs reales
         try {
             const response = await fetch('data/products.json');
             const data = await response.json();
             this.products = data.products;
+            
+            console.log(`📦 Cargados ${this.products.length} productos desde JSON (IDs iniciales: ${this.products.map(p => p.id).join(', ')})`);
+            
+            // Mapear IDs reales desde la BD si es posible
+            const mapped = await this.mapProductIdsFromDB();
+            
+            if (!mapped) {
+                console.warn('⚠️ No se pudieron mapear IDs, los productos pueden tener IDs incorrectos');
+            }
+            
             this.filteredProducts = [...this.products];
+            console.log(`✅ Productos listos para renderizar (IDs finales: ${this.products.map(p => p.id).join(', ')})`);
         } catch (error) {
             console.error('Error al cargar productos:', error);
             this.products = this.getMockProducts();
             this.filteredProducts = [...this.products];
         }
+    }
+
+    // Mapear IDs del JSON a IDs reales de la BD usando SKU
+    async mapProductIdsFromDB() {
+        if (!window.apiClient) {
+            console.warn('⚠️ API client no disponible, no se pueden mapear IDs');
+            return false;
+        }
+
+        try {
+            // Obtener todos los productos de la BD para mapear por SKU
+            const response = await window.apiClient.getProducts({ limit: 100 });
+            if (response.success && response.data) {
+                // La API devuelve un array directamente en response.data
+                const productsArray = Array.isArray(response.data) ? response.data : [];
+                const skuToIdMap = {};
+                productsArray.forEach(p => {
+                    if (p.sku && p.id) {
+                        skuToIdMap[p.sku] = parseInt(p.id);
+                    }
+                });
+
+                let mappedCount = 0;
+                // Actualizar IDs en productos del JSON
+                this.products.forEach(product => {
+                    if (product.sku && skuToIdMap[product.sku]) {
+                        const mappedId = skuToIdMap[product.sku];
+                        const oldId = product.id;
+                        product.id = mappedId.toString();
+                        product._mappedFromDB = true;
+                        mappedCount++;
+                        if (oldId !== mappedId.toString()) {
+                            console.log(`✅ ID mapeado: SKU ${product.sku} - ${oldId} → ${mappedId}`);
+                        }
+                    }
+                });
+                
+                // Actualizar también filteredProducts
+                this.filteredProducts = [...this.products];
+                
+                if (mappedCount > 0) {
+                    console.log(`✅ ${mappedCount} productos mapeados desde la BD por SKU`);
+                    console.log('IDs finales:', this.products.map(p => `SKU:${p.sku}→ID:${p.id}`).join(', '));
+                } else {
+                    console.warn('⚠️ No se encontraron productos para mapear');
+                }
+                return mappedCount > 0;
+            }
+        } catch (error) {
+            console.error('❌ Error al mapear IDs desde la BD:', error);
+            return false;
+        }
+        return false;
+    }
+
+    // Generar imagen placeholder
+    getPlaceholderImage(name) {
+        return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk0YTNiOCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlbjwvdGV4dD48L3N2Zz4=';
     }
 
     // Obtener productos mock como fallback
@@ -261,7 +368,7 @@ class CatalogManager {
                         <button class="btn-add-cart" data-product-id="${product.id}">
                             <i class="fas fa-cart-plus"></i> Agregar
                         </button>
-                        <button class="btn-view" onclick="window.location.href='product-detail.html?id=${product.id}'">
+                        <button class="btn-view" data-product-id="${product.id}">
                             Ver Detalles
                         </button>
                     </div>
@@ -291,7 +398,7 @@ class CatalogManager {
                         <button class="btn-add-cart" data-product-id="${product.id}">
                             <i class="fas fa-cart-plus"></i> Agregar
                         </button>
-                        <button class="btn-view" onclick="window.location.href='product-detail.html?id=${product.id}'">
+                        <button class="btn-view" data-product-id="${product.id}">
                             Ver Detalles
                         </button>
                     </div>
@@ -305,8 +412,12 @@ class CatalogManager {
         const addCartButtons = document.querySelectorAll('.btn-add-cart');
         addCartButtons.forEach(btn => {
             btn.addEventListener('click', (e) => {
-                const productId = e.target.dataset.productId;
-                const product = this.products.find(p => p.id === productId);
+                const productId = e.target.closest('.btn-add-cart').dataset.productId;
+                // Buscar producto comparando tanto como string como número
+                const product = this.products.find(p => {
+                    const pId = p.id || p.product_id;
+                    return pId == productId || String(pId) === String(productId);
+                });
                 if (product) {
                     // Esperar a que el carrito esté disponible
                     if (window.cart) {
@@ -315,6 +426,26 @@ class CatalogManager {
                         // Crear carrito temporal si no existe
                         const tempCart = new Cart();
                         tempCart.addItem(product);
+                    }
+                } else {
+                    console.warn('Producto no encontrado:', productId);
+                }
+            });
+        });
+
+        const viewButtons = document.querySelectorAll('.btn-view');
+        viewButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const button = e.target.closest('.btn-view');
+                const productId = button.dataset.productId;
+                if (productId) {
+                    // Asegurar que el ID sea un número válido
+                    const id = parseInt(productId);
+                    if (!isNaN(id) && id > 0) {
+                        window.location.href = `product-detail.html?id=${id}`;
+                    } else {
+                        console.error('ID de producto inválido:', productId);
+                        Utils.showToast('Error: ID de producto inválido', 'error');
                     }
                 }
             });

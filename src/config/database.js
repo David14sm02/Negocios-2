@@ -232,13 +232,6 @@ class Database {
         try {
             console.log('🌱 Insertando datos iniciales...');
 
-            // Verificar si ya existen datos
-            const categoryCount = await this.query('SELECT COUNT(*) FROM categories');
-            if (parseInt(categoryCount.rows[0].count) > 0) {
-                console.log('📊 Datos iniciales ya existen, omitiendo...');
-                return;
-            }
-
             // Insertar categorías
             const categories = [
                 { name: 'Cables de Red', description: 'Cables de red para diferentes categorías y aplicaciones' },
@@ -343,22 +336,113 @@ class Database {
                     features: ['Compatible con RJ45, RJ11, RJ12', 'Cortador de cable integrado', 'Pelacables automático'],
                     tags: ['crimpeadora', 'rj45', 'herramienta', 'profesional'],
                     is_featured: true
+                },
+                {
+                    name: 'Cable Cat6a UTP 305m',
+                    description: 'Cable de red Cat6a UTP de 305 metros para instalaciones de alta velocidad. Soporte para 10 Gigabit Ethernet.',
+                    price: 3200,
+                    category_id: categoryMap['Cables de Red'],
+                    sku: 'CAT6A-305M',
+                    stock: 30,
+                    brand: 'NetTech',
+                    specifications: JSON.stringify({
+                        type: 'Cat6a UTP',
+                        length: '305 metros',
+                        conductor: 'Cobre sólido 23 AWG',
+                        jacket: 'PVC LSZH',
+                        frequency: '500 MHz',
+                        speed: '10 Gbps',
+                        color: 'Verde'
+                    }),
+                    features: ['Soporte para 10 Gigabit Ethernet', 'Frecuencia hasta 500 MHz', 'Cubierta LSZH retardante de llama', 'Ideal para centros de datos'],
+                    tags: ['cat6a', 'cable', '10gb', 'ethernet', '305m'],
+                    is_featured: true
+                },
+                {
+                    name: 'Patch Panel 24 Puertos Cat6',
+                    description: 'Patch panel de 24 puertos Cat6 con montaje en rack. Terminación IDC para fácil instalación.',
+                    price: 1200,
+                    category_id: categoryMap['Conectores'],
+                    sku: 'PP-24-CAT6',
+                    stock: 40,
+                    brand: 'NetTech',
+                    specifications: JSON.stringify({
+                        ports: '24 puertos RJ45',
+                        category: 'Cat6',
+                        mounting: 'Rack 19"',
+                        termination: 'IDC',
+                        material: 'Metal',
+                        height: '1U'
+                    }),
+                    features: ['24 puertos RJ45 Cat6', 'Montaje en rack 19 pulgadas', 'Terminación IDC', 'Construcción metálica robusta', 'Altura 1U'],
+                    tags: ['patchpanel', '24puertos', 'cat6', 'rack'],
+                    is_featured: true
+                },
+                {
+                    name: 'Router WiFi 6 AX3000',
+                    description: 'Router WiFi 6 con velocidad AX3000. Ideal para hogares y oficinas pequeñas con múltiples dispositivos.',
+                    price: 2800,
+                    category_id: categoryMap['Equipos de Red'],
+                    sku: 'RT-WIFI6-AX3000',
+                    stock: 20,
+                    brand: 'NetTech',
+                    specifications: JSON.stringify({
+                        standard: 'WiFi 6 (802.11ax)',
+                        speed: 'AX3000 (574 + 2402 Mbps)',
+                        ports: '4 Gigabit LAN + 1 WAN',
+                        antennas: '4 antenas externas',
+                        security: 'WPA3',
+                        usb: '1 puerto USB 3.0'
+                    }),
+                    features: ['WiFi 6 (802.11ax) AX3000', '4 puertos Gigabit Ethernet', '4 antenas externas de alta ganancia', 'Seguridad WPA3', 'Puerto USB 3.0'],
+                    tags: ['router', 'wifi6', 'ax3000', 'gigabit'],
+                    is_featured: true
+                },
+                {
+                    name: 'Tester de Red RJ45',
+                    description: 'Tester de red para cables RJ45 con indicadores LED. Detecta cortocircuitos, circuitos abiertos y cruces.',
+                    price: 450,
+                    category_id: categoryMap['Herramientas'],
+                    sku: 'TEST-RJ45',
+                    stock: 35,
+                    brand: 'NetTech',
+                    specifications: JSON.stringify({
+                        type: 'Tester RJ45',
+                        ports: '2 puertos RJ45',
+                        indicators: '8 LEDs por puerto',
+                        tests: 'Cortocircuito, abierto, cruzado',
+                        power: 'Batería 9V',
+                        range: 'Hasta 300m'
+                    }),
+                    features: ['Detección de cortocircuitos', 'Detección de circuitos abiertos', 'Detección de cables cruzados', 'Indicadores LED claros', 'Alcance hasta 300 metros'],
+                    tags: ['tester', 'rj45', 'cable', 'diagnostico'],
+                    is_featured: true
                 }
             ];
 
+            let insertedCount = 0;
+            let skippedCount = 0;
+
             for (const product of products) {
-                await this.query(`
+                const result = await this.query(`
                     INSERT INTO products (name, description, price, category_id, sku, stock, brand, specifications, features, tags, is_featured)
                     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
                     ON CONFLICT (sku) DO NOTHING
+                    RETURNING id
                 `, [
                     product.name, product.description, product.price, product.category_id,
                     product.sku, product.stock, product.brand, product.specifications,
                     product.features, product.tags, product.is_featured
                 ]);
+                
+                if (result.rows.length > 0) {
+                    insertedCount++;
+                } else {
+                    skippedCount++;
+                }
             }
 
-            console.log('✅ Datos iniciales insertados exitosamente');
+            console.log(`✅ Datos iniciales procesados: ${insertedCount} insertados, ${skippedCount} ya existían`);
         } catch (error) {
             console.error('❌ Error al insertar datos iniciales:', error);
             throw error;
