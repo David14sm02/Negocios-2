@@ -1,5 +1,6 @@
-require('dotenv').config({ path: './config.env' });
-const db = require('../config/database');
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '..', 'config.env') });
+const db = require('../src/config/database');
 
 async function initializeDatabase() {
     try {

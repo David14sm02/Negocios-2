@@ -4,7 +4,8 @@ const helmet = require('helmet');
 const compression = require('compression');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
-require('dotenv').config({ path: './config.env' });
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '..', 'config.env') });
 
 const db = require('./config/database');
 const errorHandler = require('./middleware/errorHandler');
@@ -50,11 +51,50 @@ if (process.env.NODE_ENV === 'development') {
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Servir archivos estáticos
-app.use(express.static('.'));
-app.use('/css', express.static('css'));
-app.use('/js', express.static('js'));
-app.use('/data', express.static('data'));
+// Servir archivos estáticos desde public/
+const publicPath = path.join(__dirname, '..', 'public');
+app.use(express.static(publicPath, {
+    setHeaders: (res, filePath) => {
+        const ext = path.extname(filePath).toLowerCase();
+        const mimeTypes = {
+            '.css': 'text/css',
+            '.js': 'application/javascript',
+            '.json': 'application/json',
+            '.html': 'text/html',
+            '.png': 'image/png',
+            '.jpg': 'image/jpeg',
+            '.jpeg': 'image/jpeg',
+            '.gif': 'image/gif',
+            '.svg': 'image/svg+xml',
+            '.ico': 'image/x-icon',
+            '.woff': 'font/woff',
+            '.woff2': 'font/woff2',
+            '.ttf': 'font/ttf',
+            '.eot': 'application/vnd.ms-fontobject'
+        };
+        
+        if (mimeTypes[ext]) {
+            res.setHeader('Content-Type', mimeTypes[ext]);
+        }
+    }
+}));
+app.use('/css', express.static(path.join(publicPath, 'css'), {
+    setHeaders: (res) => {
+        res.setHeader('Content-Type', 'text/css');
+    }
+}));
+app.use('/js', express.static(path.join(publicPath, 'js'), {
+    setHeaders: (res) => {
+        res.setHeader('Content-Type', 'application/javascript');
+    }
+}));
+app.use('/data', express.static(path.join(publicPath, 'data'), {
+    setHeaders: (res, filePath) => {
+        if (path.extname(filePath) === '.json') {
+            res.setHeader('Content-Type', 'application/json');
+        }
+    }
+}));
 
 // Rutas de la API
 app.use('/api/products', productRoutes);
@@ -74,23 +114,23 @@ app.get('/api/health', (req, res) => {
 
 // Rutas para servir páginas HTML
 app.get('/', (req, res) => {
-    res.sendFile(__dirname + '/index.html');
+    res.sendFile(path.join(publicPath, 'index.html'));
 });
 
 app.get('/catalog.html', (req, res) => {
-    res.sendFile(__dirname + '/catalog.html');
+    res.sendFile(path.join(publicPath, 'catalog.html'));
 });
 
 app.get('/blog.html', (req, res) => {
-    res.sendFile(__dirname + '/blog.html');
+    res.sendFile(path.join(publicPath, 'blog.html'));
 });
 
 app.get('/about.html', (req, res) => {
-    res.sendFile(__dirname + '/about.html');
+    res.sendFile(path.join(publicPath, 'about.html'));
 });
 
 app.get('/test-cart', (req, res) => {
-    res.sendFile(__dirname + '/test-cart.html');
+    res.sendFile(path.join(publicPath, 'test-cart.html'));
 });
 
 // Middleware de manejo de errores
@@ -125,20 +165,22 @@ async function startServer() {
     }
 }
 
-// Manejo de señales de terminación
-process.on('SIGTERM', async () => {
-    console.log('🛑 Recibida señal SIGTERM, cerrando servidor...');
-    await db.close();
-    process.exit(0);
-});
+// Manejo de señales de terminación (solo en desarrollo local)
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+    process.on('SIGTERM', async () => {
+        console.log('🛑 Recibida señal SIGTERM, cerrando servidor...');
+        await db.close();
+        process.exit(0);
+    });
 
-process.on('SIGINT', async () => {
-    console.log('🛑 Recibida señal SIGINT, cerrando servidor...');
-    await db.close();
-    process.exit(0);
-});
+    process.on('SIGINT', async () => {
+        console.log('🛑 Recibida señal SIGINT, cerrando servidor...');
+        await db.close();
+        process.exit(0);
+    });
 
-// Iniciar servidor
-startServer();
+    // Iniciar servidor solo si no estamos en Vercel
+    startServer();
+}
 
 module.exports = app;
