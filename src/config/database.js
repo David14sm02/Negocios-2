@@ -7,7 +7,7 @@ class Database {
             ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
             max: 20, // máximo de conexiones en el pool
             idleTimeoutMillis: 30000, // cerrar conexiones inactivas después de 30 segundos
-            connectionTimeoutMillis: 2000, // timeout de conexión de 2 segundos
+            connectionTimeoutMillis: 10000, // timeout de conexión ampliado para entornos remotos
         });
 
         // Manejo de errores del pool
@@ -154,10 +154,50 @@ class Database {
                     billing_address JSONB,
                     payment_method VARCHAR(50),
                     payment_status VARCHAR(50) DEFAULT 'pending',
+                    stripe_payment_intent_id VARCHAR(255),
+                    stripe_checkout_session_id VARCHAR(255),
+                    stripe_customer_id VARCHAR(255),
+                    currency VARCHAR(10) DEFAULT 'mxn',
+                    amount_paid DECIMAL(10,2) CHECK (amount_paid >= 0),
+                    amount_refunded DECIMAL(10,2) DEFAULT 0 CHECK (amount_refunded >= 0),
+                    receipt_url VARCHAR(500),
+                    payment_details JSONB DEFAULT '{}'::jsonb,
                     notes TEXT,
                     created_at TIMESTAMP DEFAULT NOW(),
                     updated_at TIMESTAMP DEFAULT NOW()
                 )
+            `);
+
+            await this.query(`
+                ALTER TABLE orders ADD COLUMN IF NOT EXISTS stripe_payment_intent_id VARCHAR(255)
+            `);
+
+            await this.query(`
+                ALTER TABLE orders ADD COLUMN IF NOT EXISTS stripe_checkout_session_id VARCHAR(255)
+            `);
+
+            await this.query(`
+                ALTER TABLE orders ADD COLUMN IF NOT EXISTS stripe_customer_id VARCHAR(255)
+            `);
+
+            await this.query(`
+                ALTER TABLE orders ADD COLUMN IF NOT EXISTS currency VARCHAR(10) DEFAULT 'mxn'
+            `);
+
+            await this.query(`
+                ALTER TABLE orders ADD COLUMN IF NOT EXISTS amount_paid DECIMAL(10,2) CHECK (amount_paid >= 0)
+            `);
+
+            await this.query(`
+                ALTER TABLE orders ADD COLUMN IF NOT EXISTS amount_refunded DECIMAL(10,2) DEFAULT 0 CHECK (amount_refunded >= 0)
+            `);
+
+            await this.query(`
+                ALTER TABLE orders ADD COLUMN IF NOT EXISTS receipt_url VARCHAR(500)
+            `);
+
+            await this.query(`
+                ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_details JSONB DEFAULT '{}'::jsonb
             `);
 
             // Tabla de detalles de órdenes
@@ -170,6 +210,20 @@ class Database {
                     price DECIMAL(10,2) NOT NULL CHECK (price >= 0),
                     total DECIMAL(10,2) NOT NULL CHECK (total >= 0),
                     created_at TIMESTAMP DEFAULT NOW()
+                )
+            `);
+
+            await this.query(`
+                CREATE TABLE IF NOT EXISTS stripe_events (
+                    id SERIAL PRIMARY KEY,
+                    stripe_event_id VARCHAR(255) UNIQUE NOT NULL,
+                    type VARCHAR(100) NOT NULL,
+                    order_id INTEGER REFERENCES orders(id),
+                    payload JSONB NOT NULL,
+                    processed BOOLEAN DEFAULT false,
+                    error TEXT,
+                    created_at TIMESTAMP DEFAULT NOW(),
+                    processed_at TIMESTAMP
                 )
             `);
 
@@ -214,8 +268,12 @@ class Database {
             await this.query(`CREATE INDEX IF NOT EXISTS idx_products_featured ON products(is_featured)`);
             await this.query(`CREATE INDEX IF NOT EXISTS idx_orders_user ON orders(user_id)`);
             await this.query(`CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status)`);
+            await this.query(`CREATE INDEX IF NOT EXISTS idx_orders_payment_intent ON orders(stripe_payment_intent_id)`);
+            await this.query(`CREATE INDEX IF NOT EXISTS idx_orders_checkout_session ON orders(stripe_checkout_session_id)`);
             await this.query(`CREATE INDEX IF NOT EXISTS idx_order_items_order ON order_items(order_id)`);
             await this.query(`CREATE INDEX IF NOT EXISTS idx_order_items_product ON order_items(product_id)`);
+            await this.query(`CREATE INDEX IF NOT EXISTS idx_stripe_events_order ON stripe_events(order_id)`);
+            await this.query(`CREATE INDEX IF NOT EXISTS idx_stripe_events_type ON stripe_events(type)`);
             await this.query(`CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)`);
             await this.query(`CREATE INDEX IF NOT EXISTS idx_articles_slug ON articles(slug)`);
             await this.query(`CREATE INDEX IF NOT EXISTS idx_articles_published ON articles(is_published)`);

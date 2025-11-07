@@ -4,6 +4,7 @@ class Cart {
         this.apiClient = window.apiClient;
         this.items = [];
         this.total = 0;
+        this.isProcessingCheckout = false;
         this.init();
     }
 
@@ -246,11 +247,18 @@ class Cart {
     }
 
     // Limpiar carrito
-    clearCart() {
+    async clearCart() {
+        try {
+            if (this.apiClient) {
+                await this.apiClient.clearCart();
+            }
+        } catch (error) {
+            console.warn('Error al limpiar carrito en el servidor:', error);
+        }
         this.items = [];
+        this.total = 0;
         this.saveToStorage();
         this.updateCartDisplay();
-        Utils.showToast('Carrito vaciado', 'info');
     }
 
     // Obtener total del carrito
@@ -411,29 +419,99 @@ class Cart {
     }
 
     // Proceder al checkout
-    proceedToCheckout() {
+    async proceedToCheckout() {
+        if (this.isProcessingCheckout) {
+            return;
+        }
+
         if (this.items.length === 0) {
             Utils.showToast('El carrito está vacío', 'warning');
             return;
         }
 
-        // Por ahora, mostrar los datos del carrito
-        const orderData = {
-            items: this.items,
-            total: this.getTotal(),
-            totalItems: this.getTotalItems(),
-            timestamp: new Date().toISOString()
-        };
+        if (!this.apiClient || !this.apiClient.isAuthenticated()) {
+            Utils.showToast('Debes iniciar sesión para completar la compra.', 'warning');
+            return;
+        }
 
-        console.log('Datos del pedido:', orderData);
-        Utils.showToast('Redirigiendo al checkout...', 'info');
-        
-        // Aquí se integraría con el sistema de pagos
-        // Por ahora, simulamos el proceso
-        setTimeout(() => {
-            this.clearCart();
-            Utils.showToast('Pedido procesado exitosamente', 'success');
-        }, 2000);
+        const checkoutBtn = document.getElementById('checkoutBtn');
+        this.isProcessingCheckout = true;
+
+        if (checkoutBtn) {
+            checkoutBtn.disabled = true;
+        }
+
+        try {
+            const orderItems = this.items
+                .map(item => {
+                    const productId = parseInt(item.product_id || item.id, 10);
+                    return {
+                        product_id: Number.isNaN(productId) ? null : productId,
+                        quantity: item.quantity
+                    };
+                })
+                .filter(item => item.product_id && item.quantity > 0);
+
+            if (orderItems.length === 0) {
+                throw new Error('No se pudieron preparar los productos del carrito.');
+            }
+
+            const orderPayload = {
+                items: orderItems,
+                payment_method: 'stripe'
+            };
+
+            const orderResponse = await this.apiClient.createOrder(orderPayload);
+
+            if (!orderResponse?.success) {
+                throw new Error(orderResponse?.error || 'No se pudo crear la orden de compra.');
+            }
+
+            const order = orderResponse?.data?.order;
+            if (!order || !order.id) {
+                throw new Error('No se pudo crear la orden de compra.');
+            }
+
+            const origin = window.location.origin;
+            const checkoutResponse = await this.apiClient.createCheckoutSession({
+                order_id: order.id,
+                success_url: `${origin}/checkout/success`,
+                cancel_url: `${origin}/checkout/cancel`
+            });
+
+            const checkoutUrl = checkoutResponse?.data?.url;
+            if (!checkoutUrl) {
+                throw new Error('Stripe no devolvió una URL de checkout.');
+            }
+
+            Utils.showToast('Redirigiendo al checkout seguro...', 'info');
+            window.location.href = checkoutUrl;
+        } catch (error) {
+            console.error('Error al iniciar el checkout:', error);
+            
+            let errorMessage = 'No se pudo iniciar el pago.';
+            
+            if (error.message) {
+                if (error.message.includes('Invalid API Key')) {
+                    errorMessage = 'Error de configuración: La clave API de Stripe no es válida. Por favor, contacta al administrador.';
+                } else if (error.message.includes('401') || error.message.includes('Unauthorized')) {
+                    errorMessage = 'Tu sesión ha expirado. Por favor, inicia sesión nuevamente.';
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 2000);
+                } else if (error.message.includes('No se pudo crear la orden')) {
+                    errorMessage = 'No se pudo crear la orden. Verifica que los productos estén disponibles.';
+                } else {
+                    errorMessage = error.message;
+                }
+            }
+            
+            Utils.showToast(errorMessage, 'error');
+            this.isProcessingCheckout = false;
+            if (checkoutBtn) {
+                checkoutBtn.disabled = this.items.length === 0;
+            }
+        }
     }
 
     // Obtener producto por ID (simulado)

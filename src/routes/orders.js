@@ -2,6 +2,7 @@ const express = require('express');
 const db = require('../config/database');
 const { validateOrder, validateId } = require('../middleware/validation');
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
+const dolibarrService = require('../services/dolibarrService');
 
 const router = express.Router();
 
@@ -116,6 +117,26 @@ router.post('/', authenticateToken, validateOrder, async (req, res, next) => {
 
             return order;
         });
+
+        // Preparar datos completos de la orden para sincronización
+        const orderWithItems = {
+            ...result,
+            items: orderItems.map(item => ({
+                product_id: item.product_id,
+                product_name: productsMap[item.product_id].name,
+                product_sku: productsMap[item.product_id].sku,
+                quantity: item.quantity,
+                price: item.price,
+                total: item.total
+            }))
+        };
+
+        // Sincronizar con Dolibarr automáticamente (sin bloquear la respuesta)
+        if (process.env.DOLIBARR_URL && process.env.DOLIBARR_AUTO_SYNC !== 'false') {
+            dolibarrService.syncOrder(orderWithItems, db).catch(error => {
+                console.error('⚠️ Error sincronizando orden con Dolibarr (no crítico):', error.message);
+            });
+        }
 
         res.status(201).json({
             success: true,
@@ -286,6 +307,18 @@ router.put('/:id/cancel', authenticateToken, validateId, async (req, res, next) 
             });
         }
 
+        // Obtener información de los items antes de cancelar (para sincronización con Dolibarr)
+        const itemsResult = await db.query(`
+            SELECT 
+                oi.product_id, 
+                oi.quantity,
+                p.sku,
+                p.name
+            FROM order_items oi
+            JOIN products p ON oi.product_id = p.id
+            WHERE oi.order_id = $1
+        `, [id]);
+
         // Cancelar orden y restaurar stock
         await db.transaction(async (client) => {
             // Actualizar estado de la orden
@@ -295,11 +328,6 @@ router.put('/:id/cancel', authenticateToken, validateId, async (req, res, next) 
             );
 
             // Restaurar stock de productos
-            const itemsResult = await client.query(
-                'SELECT product_id, quantity FROM order_items WHERE order_id = $1',
-                [id]
-            );
-
             for (const item of itemsResult.rows) {
                 await client.query(`
                     UPDATE products 
@@ -308,6 +336,33 @@ router.put('/:id/cancel', authenticateToken, validateId, async (req, res, next) 
                 `, [item.quantity, item.product_id]);
             }
         });
+
+        // Sincronizar cancelación con Dolibarr (sin bloquear la respuesta)
+        if (process.env.DOLIBARR_URL && process.env.DOLIBARR_AUTO_SYNC !== 'false') {
+            // Obtener productos actualizados con stock restaurado después de la transacción
+            const updatedProductsResult = await db.query(`
+                SELECT id, sku, name, stock 
+                FROM products 
+                WHERE id = ANY($1)
+            `, [itemsResult.rows.map(item => item.product_id)]);
+            
+            const cancellationData = {
+                items: itemsResult.rows.map(item => {
+                    const updatedProduct = updatedProductsResult.rows.find(p => p.id === item.product_id);
+                    return {
+                        product_id: item.product_id,
+                        product_sku: item.sku,
+                        product_name: item.name,
+                        quantity: item.quantity,
+                        current_stock: updatedProduct ? updatedProduct.stock : null
+                    };
+                })
+            };
+            
+            dolibarrService.syncOrderCancellation(cancellationData, db).catch(error => {
+                console.error('⚠️ Error sincronizando cancelación con Dolibarr (no crítico):', error.message);
+            });
+        }
 
         res.json({
             success: true,

@@ -2,6 +2,7 @@ const express = require('express');
 const db = require('../config/database');
 const { validateProduct, validateId, validateSearch } = require('../middleware/validation');
 const { authenticateToken, requireAdmin, optionalAuth } = require('../middleware/auth');
+const dolibarrService = require('../services/dolibarrService');
 
 const router = express.Router();
 
@@ -292,9 +293,18 @@ router.post('/', authenticateToken, requireAdmin, validateProduct, async (req, r
             dimensions, is_featured
         ]);
 
+        const product = result.rows[0];
+
+        // Sincronizar con Dolibarr automáticamente (sin bloquear la respuesta)
+        if (process.env.DOLIBARR_URL && process.env.DOLIBARR_AUTO_SYNC !== 'false') {
+            dolibarrService.syncProduct(product).catch(error => {
+                console.error('⚠️ Error sincronizando producto con Dolibarr (no crítico):', error.message);
+            });
+        }
+
         res.status(201).json({
             success: true,
-            data: result.rows[0],
+            data: product,
             message: 'Producto creado exitosamente'
         });
     } catch (error) {
@@ -365,9 +375,18 @@ router.put('/:id', authenticateToken, requireAdmin, validateId, validateProduct,
             dimensions, is_featured, is_active, id
         ]);
 
+        const product = result.rows[0];
+
+        // Sincronizar con Dolibarr automáticamente (sin bloquear la respuesta)
+        if (process.env.DOLIBARR_URL && process.env.DOLIBARR_AUTO_SYNC !== 'false') {
+            dolibarrService.syncProduct(product).catch(error => {
+                console.error('⚠️ Error sincronizando producto con Dolibarr (no crítico):', error.message);
+            });
+        }
+
         res.json({
             success: true,
-            data: result.rows[0],
+            data: product,
             message: 'Producto actualizado exitosamente'
         });
     } catch (error) {

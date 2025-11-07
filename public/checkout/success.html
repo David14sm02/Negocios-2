@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pago Exitoso - NetTech Solutions</title>
+    <link rel="stylesheet" href="../css/colors.css">
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="../css/responsive.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a href="../index.html">
+                        <i class="fas fa-network-wired"></i>
+                        <span>NetTech Solutions</span>
+                    </a>
+                </div>
+
+                <nav class="nav">
+                    <ul class="nav-list">
+                        <li><a href="../index.html" class="nav-link">Inicio</a></li>
+                        <li><a href="../catalog.html" class="nav-link">Catálogo</a></li>
+                        <li><a href="../blog.html" class="nav-link">Blog</a></li>
+                        <li><a href="../about.html" class="nav-link">Acerca de</a></li>
+                    </ul>
+                </nav>
+
+                <div class="header-actions">
+                    <div class="cart-icon" id="cartIcon">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="cart-count" id="cartCount">0</span>
+                    </div>
+
+                    <div class="user-profile" id="userProfile">
+                        <div class="user-profile-guest">
+                            <i class="fas fa-user-circle"></i>
+                            <div>
+                                <span class="user-status">Invitado</span>
+                                <div class="user-actions">
+                                    <a href="../login.html">Iniciar Sesión</a>
+                                    <a href="../register.html">Crear Cuenta</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="mobile-menu-btn" id="mobileMenuBtn">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="checkout-result">
+        <div class="container">
+            <div class="checkout-success-card">
+                <div class="success-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h1>¡Pago Exitoso!</h1>
+                <p>Tu pedido ha sido procesado correctamente. Recibirás un correo de confirmación con los detalles de tu compra.</p>
+                
+                <div class="success-details" id="successDetails">
+                    <div class="detail-item">
+                        <span class="detail-label">Número de orden:</span>
+                        <span class="detail-value" id="orderNumber">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Estado:</span>
+                        <span class="detail-value status-success">Confirmado</span>
+                    </div>
+                </div>
+
+                <div class="success-actions">
+                    <a href="../catalog.html" class="btn btn-primary">Seguir Comprando</a>
+                    <a href="#" class="btn btn-outline" id="viewOrderBtn">Ver Mis Pedidos</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <i class="fas fa-network-wired"></i>
+                        <span>NetTech Solutions</span>
+                    </div>
+                    <p>Especialistas en productos para instalaciones de redes profesionales.</p>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Enlaces Rápidos</h4>
+                    <ul>
+                        <li><a href="../catalog.html">Catálogo</a></li>
+                        <li><a href="../blog.html">Blog</a></li>
+                        <li><a href="../about.html">Acerca de</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Contacto</h4>
+                    <ul>
+                        <li><i class="fas fa-phone"></i> +52 55 1234 5678</li>
+                        <li><i class="fas fa-envelope"></i> soporte@nettech.com</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; <span id="currentYear"></span> NetTech Solutions. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../js/utils.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="../js/cart.js"></script>
+    <script>
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const sessionId = urlParams.get('session_id');
+
+        if (sessionId && window.apiClient && window.apiClient.isAuthenticated()) {
+            const orderNumberEl = document.getElementById('orderNumber');
+            if (orderNumberEl) {
+                window.apiClient.getOrders({ limit: 1 }).then(response => {
+                    if (response?.success && response?.data?.length > 0) {
+                        const latestOrder = response.data[0];
+                        if (latestOrder?.order_number) {
+                            orderNumberEl.textContent = latestOrder.order_number;
+                        }
+                        if (latestOrder?.id) {
+                            const viewOrderBtn = document.getElementById('viewOrderBtn');
+                            if (viewOrderBtn) {
+                                viewOrderBtn.href = `../catalog.html?order=${latestOrder.id}`;
+                            }
+                        }
+                    }
+                }).catch(() => {
+                    if (orderNumberEl) {
+                        orderNumberEl.textContent = sessionId.substring(0, 20) + '...';
+                    }
+                });
+            }
+        } else if (sessionId) {
+            const orderNumberEl = document.getElementById('orderNumber');
+            if (orderNumberEl) {
+                orderNumberEl.textContent = sessionId.substring(0, 20) + '...';
+            }
+        }
+
+        const viewOrderBtn = document.getElementById('viewOrderBtn');
+        if (viewOrderBtn) {
+            if (window.apiClient && window.apiClient.isAuthenticated()) {
+                if (!viewOrderBtn.href || viewOrderBtn.href.includes('#')) {
+                    viewOrderBtn.href = '../catalog.html#orders';
+                }
+                viewOrderBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    window.location.href = viewOrderBtn.href;
+                });
+            } else {
+                viewOrderBtn.style.display = 'none';
+            }
+        }
+
+        if (window.cart && typeof window.cart.clearCart === 'function') {
+            window.cart.clearCart().catch(err => {
+                console.warn('No se pudo limpiar el carrito:', err);
+            });
+        }
+    </script>
+</body>
+</html>
+

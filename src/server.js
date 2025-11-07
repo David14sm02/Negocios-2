@@ -16,9 +16,15 @@ const productRoutes = require('./routes/products');
 const cartRoutes = require('./routes/cart');
 const userRoutes = require('./routes/users');
 const orderRoutes = require('./routes/orders');
+const paymentRoutes = require('./routes/payments');
+const dolibarrRoutes = require('./routes/dolibarr');
+const { handleStripeWebhook } = require('./routes/webhooks');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Endpoint de webhooks (requiere body sin parsear)
+app.post('/webhooks/stripe', express.raw({ type: 'application/json' }), handleStripeWebhook);
 
 // Middleware de seguridad
 app.use(helmet());
@@ -101,6 +107,8 @@ app.use('/api/products', productRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/payments', paymentRoutes);
+app.use('/api/dolibarr', dolibarrRoutes);
 
 // Ruta de salud del servidor
 app.get('/api/health', (req, res) => {
@@ -135,6 +143,14 @@ app.get('/product-detail.html', (req, res) => {
 
 app.get('/test-cart', (req, res) => {
     res.sendFile(path.join(publicPath, 'test-cart.html'));
+});
+
+app.get('/checkout/success', (req, res) => {
+    res.sendFile(path.join(publicPath, 'checkout', 'success.html'));
+});
+
+app.get('/checkout/cancel', (req, res) => {
+    res.sendFile(path.join(publicPath, 'checkout', 'cancel.html'));
 });
 
 // Middleware de manejo de errores

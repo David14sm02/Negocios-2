@@ -23,6 +23,10 @@
     .search-box input {
         width: 200px;
     }
+
+    .user-profile {
+        display: none;
+    }
     
     /* Hero */
     .hero-content {
@@ -163,6 +167,10 @@
     
     .header-actions {
         gap: 0.5rem;
+    }
+
+    .user-profile {
+        display: none;
     }
     
     /* Hero */

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pago Cancelado - NetTech Solutions</title>
+    <link rel="stylesheet" href="../css/colors.css">
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="../css/responsive.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a href="../index.html">
+                        <i class="fas fa-network-wired"></i>
+                        <span>NetTech Solutions</span>
+                    </a>
+                </div>
+
+                <nav class="nav">
+                    <ul class="nav-list">
+                        <li><a href="../index.html" class="nav-link">Inicio</a></li>
+                        <li><a href="../catalog.html" class="nav-link">Catálogo</a></li>
+                        <li><a href="../blog.html" class="nav-link">Blog</a></li>
+                        <li><a href="../about.html" class="nav-link">Acerca de</a></li>
+                    </ul>
+                </nav>
+
+                <div class="header-actions">
+                    <div class="cart-icon" id="cartIcon">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="cart-count" id="cartCount">0</span>
+                    </div>
+
+                    <div class="user-profile" id="userProfile">
+                        <div class="user-profile-guest">
+                            <i class="fas fa-user-circle"></i>
+                            <div>
+                                <span class="user-status">Invitado</span>
+                                <div class="user-actions">
+                                    <a href="../login.html">Iniciar Sesión</a>
+                                    <a href="../register.html">Crear Cuenta</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="mobile-menu-btn" id="mobileMenuBtn">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="checkout-result">
+        <div class="container">
+            <div class="checkout-cancel-card">
+                <div class="cancel-icon">
+                    <i class="fas fa-times-circle"></i>
+                </div>
+                <h1>Pago Cancelado</h1>
+                <p>El proceso de pago fue cancelado. Tu pedido no ha sido procesado y no se realizará ningún cargo.</p>
+                
+                <div class="cancel-info">
+                    <p>Si tienes algún problema con el pago, puedes intentar nuevamente o contactarnos para obtener ayuda.</p>
+                </div>
+
+                <div class="cancel-actions">
+                    <a href="../catalog.html" class="btn btn-primary">Volver al Catálogo</a>
+                    <button type="button" class="btn btn-outline" id="retryCheckoutBtn" style="display: none;">Reintentar Pago</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <i class="fas fa-network-wired"></i>
+                        <span>NetTech Solutions</span>
+                    </div>
+                    <p>Especialistas en productos para instalaciones de redes profesionales.</p>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Enlaces Rápidos</h4>
+                    <ul>
+                        <li><a href="../catalog.html">Catálogo</a></li>
+                        <li><a href="../blog.html">Blog</a></li>
+                        <li><a href="../about.html">Acerca de</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Contacto</h4>
+                    <ul>
+                        <li><i class="fas fa-phone"></i> +52 55 1234 5678</li>
+                        <li><i class="fas fa-envelope"></i> soporte@nettech.com</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; <span id="currentYear"></span> NetTech Solutions. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../js/utils.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="../js/cart.js"></script>
+    <script>
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const sessionId = urlParams.get('session_id');
+        const orderId = urlParams.get('order_id');
+
+        if (orderId && window.apiClient && window.apiClient.isAuthenticated()) {
+            const retryBtn = document.getElementById('retryCheckoutBtn');
+            if (retryBtn) {
+                retryBtn.style.display = 'inline-block';
+                retryBtn.addEventListener('click', async () => {
+                    try {
+                        const checkoutResponse = await window.apiClient.createCheckoutSession({
+                            order_id: orderId,
+                            success_url: `${window.location.origin}/checkout/success`,
+                            cancel_url: `${window.location.origin}/checkout/cancel`
+                        });
+                        if (checkoutResponse?.data?.url) {
+                            window.location.href = checkoutResponse.data.url;
+                        }
+                    } catch (error) {
+                        Utils.showToast('No se pudo reintentar el pago. Intenta más tarde.', 'error');
+                    }
+                });
+            }
+        }
+    </script>
+</body>
+</html>
+

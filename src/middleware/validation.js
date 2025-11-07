@@ -143,6 +143,24 @@ const validateCartItem = [
     handleValidationErrors
 ];
 
+const validateCheckoutSession = [
+    body('order_id')
+        .toInt()
+        .isInt({ min: 1 })
+        .withMessage('ID de orden inválido'),
+    body('success_url')
+        .optional()
+        .isString()
+        .trim()
+        .customSanitizer(value => (value && value.length > 0 ? value : undefined)),
+    body('cancel_url')
+        .optional()
+        .isString()
+        .trim()
+        .customSanitizer(value => (value && value.length > 0 ? value : undefined)),
+    handleValidationErrors
+];
+
 module.exports = {
     validateProduct,
     validateUser,
@@ -151,5 +169,6 @@ module.exports = {
     validateProductId,
     validateSearch,
     validateCartItem,
+    validateCheckoutSession,
     handleValidationErrors
 };

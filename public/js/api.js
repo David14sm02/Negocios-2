@@ -5,6 +5,23 @@ class ApiClient {
         this.token = localStorage.getItem('authToken');
     }
 
+    setCurrentUser(user) {
+        if (user) {
+            localStorage.setItem('authUser', JSON.stringify(user));
+        } else {
+            localStorage.removeItem('authUser');
+        }
+    }
+
+    getCurrentUser() {
+        try {
+            const stored = localStorage.getItem('authUser');
+            return stored ? JSON.parse(stored) : null;
+        } catch (error) {
+            return null;
+        }
+    }
+
     // Configurar token de autenticación
     setToken(token) {
         this.token = token;
@@ -12,6 +29,7 @@ class ApiClient {
             localStorage.setItem('authToken', token);
         } else {
             localStorage.removeItem('authToken');
+            this.setCurrentUser(null);
         }
     }
 
@@ -158,6 +176,9 @@ class ApiClient {
         if (result.data.token) {
             this.setToken(result.data.token);
         }
+        if (result.data.user) {
+            this.setCurrentUser(result.data.user);
+        }
         return result;
     }
 
@@ -166,11 +187,15 @@ class ApiClient {
         if (result.data.token) {
             this.setToken(result.data.token);
         }
+        if (result.data.user) {
+            this.setCurrentUser(result.data.user);
+        }
         return result;
     }
 
     async logout() {
         this.setToken(null);
+        this.setCurrentUser(null);
     }
 
     async getProfile() {
@@ -207,6 +232,14 @@ class ApiClient {
 
     async cancelOrder(id) {
         return this.put(`/orders/${id}/cancel`);
+    }
+
+    // ===== PAGOS / STRIPE =====
+    async createCheckoutSession({ order_id, success_url, cancel_url }) {
+        const payload = { order_id };
+        if (success_url) payload.success_url = success_url;
+        if (cancel_url) payload.cancel_url = cancel_url;
+        return this.post('/payments/checkout', payload);
     }
 
     // ===== UTILIDADES =====

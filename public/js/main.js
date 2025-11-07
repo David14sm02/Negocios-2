@@ -2,6 +2,7 @@
 class ECommerceApp {
     constructor() {
         this.apiClient = window.apiClient;
+        this.profileFetched = false;
         this.init();
     }
 
@@ -458,6 +459,7 @@ class ECommerceApp {
 
     // Configurar autenticación
     setupAuthentication() {
+        this.renderUserProfile();
         // Verificar si hay un token válido al cargar la página
         if (this.apiClient && this.apiClient.isAuthenticated()) {
             this.updateAuthUI(true);
@@ -472,12 +474,20 @@ class ECommerceApp {
         const guestElements = document.querySelectorAll('.guest-only');
         
         if (isAuthenticated) {
-            authElements.forEach(el => el.style.display = 'block');
+            authElements.forEach(el => {
+                const displayValue = el.dataset.authDisplay || 'inline-flex';
+                el.style.display = displayValue;
+            });
             guestElements.forEach(el => el.style.display = 'none');
         } else {
             authElements.forEach(el => el.style.display = 'none');
-            guestElements.forEach(el => el.style.display = 'block');
+            guestElements.forEach(el => {
+                const displayValue = el.dataset.authDisplay || 'inline-flex';
+                el.style.display = displayValue;
+            });
         }
+
+        this.renderUserProfile();
     }
 
     // Obtener imagen por defecto
@@ -501,8 +511,74 @@ class ECommerceApp {
     // Logout
     async logout() {
         this.apiClient.logout();
+        this.profileFetched = false;
         this.updateAuthUI(false);
         Utils.showToast('Sesión cerrada', 'info');
+        if (window.cart && typeof window.cart.loadCartFromAPI === 'function') {
+            try {
+                await window.cart.loadCartFromAPI();
+                window.cart.updateCartDisplay();
+            } catch (error) {
+                console.warn('No se pudo recargar el carrito después de cerrar sesión:', error);
+            }
+        }
+    }
+
+    renderUserProfile() {
+        const userProfile = document.getElementById('userProfile');
+        if (!userProfile) return;
+
+        const isAuthenticated = this.apiClient && this.apiClient.isAuthenticated();
+        const currentUser = this.apiClient?.getCurrentUser();
+
+        if (isAuthenticated && !currentUser && !this.profileFetched) {
+            this.profileFetched = true;
+            this.apiClient.getProfile().then(response => {
+                if (response?.data?.user) {
+                    this.apiClient.setCurrentUser(response.data.user);
+                    this.renderUserProfile();
+                }
+            }).catch(() => {
+                this.profileFetched = false;
+            });
+        }
+
+        if (isAuthenticated && currentUser) {
+            const initial = (currentUser.first_name?.[0] || currentUser.email?.[0] || '?').toUpperCase();
+            const displayName = currentUser.first_name || currentUser.email;
+
+            userProfile.innerHTML = `
+                <div class="user-profile-logged">
+                    <div class="user-avatar">${initial}</div>
+                    <div class="user-data">
+                        <span class="user-name">${displayName}</span>
+                        <span class="user-status">Sesión activa</span>
+                    </div>
+                    <button type="button" class="user-profile-logout" id="userLogoutBtn" title="Cerrar sesión">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            `;
+
+            const logoutBtn = userProfile.querySelector('#userLogoutBtn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', () => this.logout());
+            }
+        } else {
+            this.profileFetched = false;
+            userProfile.innerHTML = `
+                <div class="user-profile-guest">
+                    <i class="fas fa-user-circle"></i>
+                    <div>
+                        <span class="user-status">Invitado</span>
+                        <div class="user-actions">
+                            <a href="login.html">Iniciar Sesión</a>
+                            <a href="register.html">Crear Cuenta</a>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
     }
 
     // Registrar usuario
