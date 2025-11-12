@@ -234,6 +234,41 @@ class Utils {
             behavior: 'smooth'
         });
     }
+
+    // Redirigir si el usuario no es administrador
+    static redirectIfNotAdmin(options = {}) {
+        const {
+            apiClient = window.apiClient,
+            redirectTo = 'login.html',
+            toastMessage = 'Se requieren permisos de administrador.',
+            includeCurrentPath = true
+        } = options;
+
+        if (!apiClient || typeof apiClient.isAuthenticated !== 'function') {
+            return false;
+        }
+
+        const isAuthenticated = apiClient.isAuthenticated();
+        const isAdmin = typeof apiClient.isAdmin === 'function' ? apiClient.isAdmin() : false;
+
+        if (isAuthenticated && isAdmin) {
+            return true;
+        }
+
+        if (toastMessage) {
+            this.showToast(toastMessage, 'warning');
+        }
+
+        if (includeCurrentPath) {
+            const currentPath = `${window.location.pathname}${window.location.search}`;
+            const separator = redirectTo.includes('?') ? '&' : '?';
+            window.location.href = `${redirectTo}${separator}redirect=${encodeURIComponent(currentPath)}`;
+        } else {
+            window.location.href = redirectTo;
+        }
+
+        return false;
+    }
 }
 
 // Exportar para uso global

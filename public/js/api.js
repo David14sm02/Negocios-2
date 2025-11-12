@@ -139,6 +139,25 @@ class ApiClient {
         return this.get('/products/categories/list');
     }
 
+    async createProduct(productData) {
+        return this.post('/products', productData);
+    }
+
+    async updateProduct(id, productData) {
+        return this.put(`/products/${id}`, productData);
+    }
+
+    async updateProductStock(id, stockData) {
+        return this.request(`/products/${id}/stock`, {
+            method: 'PATCH',
+            body: JSON.stringify(stockData)
+        });
+    }
+
+    async deleteProduct(id) {
+        return this.delete(`/products/${id}`);
+    }
+
     // ===== CARRITO =====
     async getCart() {
         return this.get('/cart');
@@ -256,6 +275,24 @@ class ApiClient {
         return !!this.token;
     }
 
+    // Verificar si el usuario actual es administrador
+    isAdmin() {
+        const currentUser = this.getCurrentUser();
+
+        if (currentUser) {
+            if (typeof currentUser.is_admin !== 'undefined') {
+                return !!currentUser.is_admin;
+            }
+
+            if (typeof currentUser.isAdmin !== 'undefined') {
+                return !!currentUser.isAdmin;
+            }
+        }
+
+        const tokenUser = this.getUserFromToken();
+        return tokenUser?.isAdmin === true;
+    }
+
     // Obtener información del usuario desde el token
     getUserFromToken() {
         if (!this.token) return null;
@@ -264,7 +301,8 @@ class ApiClient {
             const payload = JSON.parse(atob(this.token.split('.')[1]));
             return {
                 id: payload.userId,
-                exp: payload.exp
+                exp: payload.exp,
+                isAdmin: payload.isAdmin === true
             };
         } catch (error) {
             return null;

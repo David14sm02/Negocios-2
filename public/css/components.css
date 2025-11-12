@@ -1,5 +1,9 @@
 /* Componentes Reutilizables */
 
+.hidden {
+    display: none !important;
+}
+
 /* Cards */
 .card {
     background-color: var(--bg-primary);
@@ -189,6 +193,325 @@
     height: 1px;
     background-color: var(--neutral-200);
     margin: 0.25rem 0.75rem;
+}
+
+/* Admin Dashboard */
+.admin-page {
+    padding: 4rem 0;
+    background-color: var(--bg-secondary);
+    min-height: calc(100vh - 200px);
+}
+
+.admin-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.admin-header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.admin-header p {
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.admin-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.admin-content {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2rem;
+}
+
+@media (min-width: 992px) {
+    .admin-content {
+        grid-template-columns: 2fr 1fr;
+    }
+}
+
+.admin-card {
+    background-color: var(--bg-primary);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-sm);
+    padding: 2rem;
+}
+
+.admin-card h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+}
+
+.admin-subtitle {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.admin-table thead {
+    background-color: var(--bg-secondary);
+}
+
+.admin-table th,
+.admin-table td {
+    padding: 0.85rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--neutral-200);
+    vertical-align: middle;
+}
+
+.admin-table th {
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.admin-table tbody tr:hover {
+    background-color: rgba(37, 99, 235, 0.05);
+}
+
+.table-product {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.table-product strong {
+    font-size: 1rem;
+    color: var(--text-primary);
+}
+
+.table-product-meta {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.table-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.table-empty {
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+
+.stock-control {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.stock-input {
+    width: 90px;
+    padding: 0.4rem 0.6rem;
+    border: 1px solid var(--neutral-300);
+    border-radius: var(--border-radius-md);
+    font-size: 0.9rem;
+    background-color: var(--bg-primary);
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.stock-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.stock-input.low {
+    border-color: var(--warning-color);
+    background-color: rgba(245, 158, 11, 0.12);
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.25rem 0.6rem;
+    border-radius: 9999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.status-badge.active {
+    background-color: rgba(34, 197, 94, 0.12);
+    color: #166534;
+}
+
+.status-badge.inactive {
+    background-color: rgba(239, 68, 68, 0.12);
+    color: #b91c1c;
+}
+
+.admin-form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem 1.5rem;
+}
+
+.admin-form .form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.admin-form label {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.35rem;
+}
+
+.admin-form input,
+.admin-form select,
+.admin-form textarea {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid var(--neutral-300);
+    border-radius: var(--border-radius-md);
+    background-color: var(--bg-primary);
+    font-size: 0.95rem;
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.admin-form input:focus,
+.admin-form select:focus,
+.admin-form textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.admin-form textarea {
+    min-height: 120px;
+    resize: vertical;
+    grid-column: 1 / -1;
+}
+
+.image-dropzone {
+    position: relative;
+    border: 2px dashed var(--neutral-300);
+    border-radius: var(--border-radius-lg);
+    padding: 1.5rem;
+    text-align: center;
+    background-color: rgba(37, 99, 235, 0.04);
+    transition: border-color var(--transition-fast), background-color var(--transition-fast);
+    cursor: pointer;
+}
+
+.image-dropzone.dragover {
+    border-color: var(--primary-color);
+    background-color: rgba(37, 99, 235, 0.12);
+}
+
+.image-dropzone-input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.image-dropzone-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+}
+
+.image-dropzone-content i {
+    font-size: 2.5rem;
+    color: var(--primary-color);
+}
+
+.image-dropzone-hint {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.image-dropzone-preview {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.image-dropzone-preview.hidden {
+    display: none;
+}
+
+.image-dropzone-preview img {
+    max-width: 260px;
+    width: 100%;
+    height: auto;
+    border-radius: var(--border-radius-md);
+    box-shadow: var(--shadow-sm);
+}
+
+.admin-form .form-check {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.admin-form .form-check input {
+    width: auto;
+}
+
+.admin-form-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    grid-column: 1 / -1;
+    margin-top: 1rem;
+}
+
+.admin-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.pagination-info {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.text-warning {
+    color: var(--warning-color);
+    font-size: 0.8rem;
+    font-weight: 600;
 }
 
 /* Orders */

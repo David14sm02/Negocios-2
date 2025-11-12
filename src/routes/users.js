@@ -8,9 +8,9 @@ const { authenticateToken, requireAdmin } = require('../middleware/auth');
 const router = express.Router();
 
 // Función para generar JWT
-const generateToken = (userId) => {
+const generateToken = (userId, isAdmin = false) => {
     return jwt.sign(
-        { userId },
+        { userId, isAdmin },
         process.env.JWT_SECRET,
         { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
     );
@@ -40,13 +40,28 @@ router.post('/register', validateUser, async (req, res, next) => {
 
         // Crear usuario
         const result = await db.query(`
-            INSERT INTO users (email, password_hash, first_name, last_name, phone, company)
+            INSERT INTO users (
+                email,
+                password_hash,
+                first_name,
+                last_name,
+                phone,
+                company
+            )
             VALUES ($1, $2, $3, $4, $5, $6)
-            RETURNING id, email, first_name, last_name, phone, company, created_at
+            RETURNING 
+                id, 
+                email, 
+                first_name, 
+                last_name, 
+                phone, 
+                company, 
+                is_admin,
+                created_at
         `, [email, passwordHash, first_name, last_name, phone, company]);
 
         const user = result.rows[0];
-        const token = generateToken(user.id);
+        const token = generateToken(user.id, user.is_admin);
 
         res.status(201).json({
             success: true,
@@ -58,6 +73,7 @@ router.post('/register', validateUser, async (req, res, next) => {
                     last_name: user.last_name,
                     phone: user.phone,
                     company: user.company,
+                    is_admin: user.is_admin,
                     created_at: user.created_at
                 },
                 token
@@ -115,7 +131,7 @@ router.post('/login', async (req, res, next) => {
             });
         }
 
-        const token = generateToken(user.id);
+        const token = generateToken(user.id, user.is_admin);
 
         res.json({
             success: true,

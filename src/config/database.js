@@ -101,7 +101,7 @@ class Database {
                     sku VARCHAR(100) UNIQUE NOT NULL,
                     stock INTEGER DEFAULT 0 CHECK (stock >= 0),
                     min_stock INTEGER DEFAULT 5,
-                    image_url VARCHAR(500),
+                    image_url TEXT,
                     specifications JSONB,
                     features TEXT[],
                     tags TEXT[],
