@@ -3,6 +3,9 @@ class ECommerceApp {
     constructor() {
         this.apiClient = window.apiClient;
         this.profileFetched = false;
+        this.userMenu = null;
+        this.userMenuToggle = null;
+        this.handleUserMenuOutsideClick = this.handleUserMenuOutsideClick.bind(this);
         this.init();
     }
 
@@ -549,21 +552,50 @@ class ECommerceApp {
 
             userProfile.innerHTML = `
                 <div class="user-profile-logged">
-                    <div class="user-avatar">${initial}</div>
-                    <div class="user-data">
-                        <span class="user-name">${displayName}</span>
-                        <span class="user-status">Sesión activa</span>
-                    </div>
-                    <button type="button" class="user-profile-logout" id="userLogoutBtn" title="Cerrar sesión">
-                        <i class="fas fa-sign-out-alt"></i>
+                    <button type="button" class="user-menu-toggle" id="userMenuToggle" aria-haspopup="true" aria-expanded="false">
+                        <div class="user-avatar">${initial}</div>
+                        <div class="user-data">
+                            <span class="user-name">${displayName}</span>
+                            <span class="user-status">Sesión activa</span>
+                        </div>
+                        <i class="fas fa-chevron-down user-menu-icon"></i>
                     </button>
+                    <div class="user-menu" id="userMenu" role="menu">
+                        <a href="orders.html" class="user-menu-item" role="menuitem">
+                            <i class="fas fa-box"></i>
+                            Mis pedidos
+                        </a>
+                        <div class="user-menu-divider"></div>
+                        <button type="button" class="user-menu-item user-menu-logout" id="userLogoutBtn" role="menuitem">
+                            <i class="fas fa-sign-out-alt"></i>
+                            Cerrar sesión
+                        </button>
+                    </div>
                 </div>
             `;
 
+            this.userMenu = userProfile.querySelector('#userMenu');
+            this.userMenuToggle = userProfile.querySelector('#userMenuToggle');
+
+            if (this.userMenuToggle && this.userMenu) {
+                this.userMenuToggle.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    const isOpen = this.userMenu.classList.toggle('open');
+                    this.userMenuToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+                });
+            }
+
             const logoutBtn = userProfile.querySelector('#userLogoutBtn');
             if (logoutBtn) {
-                logoutBtn.addEventListener('click', () => this.logout());
+                logoutBtn.addEventListener('click', () => {
+                    this.userMenu?.classList.remove('open');
+                    this.userMenuToggle?.setAttribute('aria-expanded', 'false');
+                    this.logout();
+                });
             }
+
+            document.removeEventListener('click', this.handleUserMenuOutsideClick);
+            document.addEventListener('click', this.handleUserMenuOutsideClick);
         } else {
             this.profileFetched = false;
             userProfile.innerHTML = `
@@ -578,6 +610,25 @@ class ECommerceApp {
                     </div>
                 </div>
             `;
+
+            document.removeEventListener('click', this.handleUserMenuOutsideClick);
+            this.userMenu = null;
+            this.userMenuToggle = null;
+        }
+    }
+
+    handleUserMenuOutsideClick(event) {
+        if (!this.userMenu || !this.userMenuToggle) {
+            return;
+        }
+
+        if (this.userMenu.contains(event.target) || this.userMenuToggle.contains(event.target)) {
+            return;
+        }
+
+        if (this.userMenu.classList.contains('open')) {
+            this.userMenu.classList.remove('open');
+            this.userMenuToggle.setAttribute('aria-expanded', 'false');
         }
     }
 

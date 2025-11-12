@@ -4,22 +4,33 @@
  */
 
 const axios = require('axios');
+const { logIntegrationEvent } = require('../utils/integrationLogger');
 
 class DolibarrService {
     constructor() {
+        this.enabled = (process.env.DOLIBARR_ENABLED || 'true').toString().toLowerCase() !== 'false';
         this.baseURL = process.env.DOLIBARR_URL || '';
         this.apiKey = process.env.DOLIBARR_API_KEY || '';
         this.apiSecret = process.env.DOLIBARR_API_SECRET || '';
         this.apiUser = process.env.DOLIBARR_API_USER || '';
         this.apiPassword = process.env.DOLIBARR_API_PASSWORD || '';
-        
-        if (!this.baseURL) {
-            console.warn('⚠️ DOLIBARR_URL no está configurada en las variables de entorno');
+        this.defaultWarehouseId = Number(process.env.DOLIBARR_DEFAULT_WAREHOUSE_ID) || null;
+
+        if (!this.enabled) {
+            console.info('ℹ️ Integración con Dolibarr deshabilitada (DOLIBARR_ENABLED=false)');
+            return;
         }
-        
-        // Soporta API Key o usuario/contraseña
-        if (!this.apiKey && !this.apiUser) {
-            console.warn('⚠️ DOLIBARR_API_KEY o DOLIBARR_API_USER no están configuradas');
+
+        if (!this.baseURL) {
+            throw new Error('DOLIBARR_URL no está configurada en config.env');
+        }
+
+        if (!this.apiKey && !(this.apiUser && this.apiPassword)) {
+            throw new Error('Debes configurar DOLIBARR_API_KEY o DOLIBARR_API_USER y DOLIBARR_API_PASSWORD en config.env');
+        }
+
+        if (!this.defaultWarehouseId) {
+            console.warn('⚠️ DOLIBARR_DEFAULT_WAREHOUSE_ID no está configurada. Los movimientos de inventario pueden fallar.');
         }
     }
 
@@ -91,16 +102,28 @@ class DolibarrService {
     /**
      * Hacer petición a la API de Dolibarr
      */
-    async request(method, endpoint, data = null) {
+    async request(method, endpoint, data = null, options = {}) {
+        const {
+            allow404 = false,
+            mark404As = 'warning',
+            reference = null
+        } = options;
+
+        if (!this.enabled) {
+            throw new Error('Integración con Dolibarr deshabilitada (DOLIBARR_ENABLED=false)');
+        }
+
         if (!this.baseURL) {
             throw new Error('DOLIBARR_URL no está configurada en config.env');
         }
-        
-        if (!this.apiKey && !this.apiUser) {
+
+        if (!this.apiKey && !(this.apiUser && this.apiPassword)) {
             throw new Error('Configura DOLIBARR_API_KEY o DOLIBARR_API_USER y DOLIBARR_API_PASSWORD en config.env');
         }
 
         const url = `${this.baseURL}/api/index.php${endpoint}`;
+        const actionLabel = `${method.toUpperCase()} ${endpoint}`;
+        const computedReference = reference || data?.ref || data?.id || data?.sku || data?.order_number || null;
         
         try {
             let apiToken = this.apiKey;
@@ -136,14 +159,160 @@ class DolibarrService {
             }
 
             const response = await axios(config);
+            
+            await logIntegrationEvent({
+                source: 'dolibarr',
+                direction: 'outbound',
+                reference: computedReference,
+                action: actionLabel,
+                status: 'success',
+                requestPayload: data,
+                responsePayload: response.data
+            });
+
             return response.data;
         } catch (error) {
+            if (allow404 && error.response?.status === 404) {
+                await logIntegrationEvent({
+                    source: 'dolibarr',
+                    direction: 'outbound',
+                    reference: computedReference,
+                    action: actionLabel,
+                    status: mark404As,
+                    requestPayload: data,
+                    responsePayload: error.response?.data,
+                    errorMessage: error.message
+                });
+                return null;
+            }
+
+            await logIntegrationEvent({
+                source: 'dolibarr',
+                direction: 'outbound',
+                reference: computedReference,
+                action: actionLabel,
+                status: 'error',
+                requestPayload: data,
+                responsePayload: error.response?.data,
+                errorMessage: error.message
+            });
+
             console.error('❌ Error en petición a Dolibarr:', error.response?.data || error.message);
             if (error.response?.status === 401) {
                 throw new Error('Error de autenticación. Verifica tus credenciales. El usuario debe tener permisos para usar la API.');
             }
             throw error;
         }
+    }
+
+    /**
+     * Obtener producto por referencia (SKU) desde Dolibarr
+     * @param {string} ref
+     * @returns {Object|null}
+     */
+    async getProductByRef(ref) {
+        if (!ref) {
+            return null;
+        }
+
+        const encodedRef = encodeURIComponent(ref);
+
+        // Intento directo con endpoint /products/ref/{ref}
+        try {
+            const product = await this.request('GET', `/products/ref/${encodedRef}`, null, {
+                allow404: true,
+                reference: ref
+            });
+            if (product && product.id) {
+                return product;
+            }
+        } catch (error) {
+            if (error.response?.status !== 404) {
+                console.warn(`⚠️ No se pudo obtener producto ${ref} mediante /products/ref: ${error.message}`);
+            }
+        }
+
+        // Fallback con sqlfilters (solo Dolibarr >= 14)
+        try {
+            const filter = encodeURIComponent(`(t.ref:=:'${ref.replace(/'/g, "''")}')`);
+            const products = await this.request('GET', `/products?limit=1&sqlfilters=${filter}`, null, {
+                allow404: true,
+                reference: ref
+            });
+            if (Array.isArray(products) && products.length > 0) {
+                return products[0];
+            }
+        } catch (error) {
+            console.warn(`⚠️ No se pudo obtener producto ${ref} mediante lista filtrada: ${error.message}`);
+        }
+
+        return null;
+    }
+
+    /**
+     * Registrar un movimiento de inventario en Dolibarr
+     * @param {Object} params
+     * @param {number|null} params.productId
+     * @param {string|null} params.productRef
+     * @param {number} params.quantity - Cantidad (positiva suma stock, negativa resta)
+     * @param {string} [params.label]
+     * @param {string|null} [params.movementDate]
+     * @param {Object} [params.extraFields]
+     */
+    async createStockMovement({
+        productId = null,
+        productRef = null,
+        quantity,
+        label,
+        movementDate = null,
+        extraFields = {}
+    }) {
+        if (!this.enabled) {
+            console.info('ℹ️ Movimiento de stock omitido: integración Dolibarr deshabilitada');
+            return { skipped: true };
+        }
+
+        if (!this.defaultWarehouseId) {
+            throw new Error('DOLIBARR_DEFAULT_WAREHOUSE_ID no está configurada');
+        }
+
+        if (!quantity || Number(quantity) === 0) {
+            return { skipped: true };
+        }
+
+        let resolvedProductId = productId;
+        let resolvedRef = productRef;
+
+        if (!resolvedProductId && resolvedRef) {
+            const remoteProduct = await this.getProductByRef(resolvedRef);
+            if (!remoteProduct) {
+                throw new Error(`Producto con referencia ${resolvedRef} no encontrado en Dolibarr para registrar movimiento de stock`);
+            }
+            resolvedProductId = remoteProduct.id;
+            resolvedRef = remoteProduct.ref || resolvedRef;
+        }
+
+        if (!resolvedProductId) {
+            throw new Error('No se proporcionó productId ni productRef para registrar movimiento de stock en Dolibarr');
+        }
+
+        const isIncrease = Number(quantity) > 0;
+        const payload = {
+            product_id: resolvedProductId,
+            product_ref: resolvedRef,
+            warehouse_id: this.defaultWarehouseId,
+            qty: Math.abs(Number(quantity)),
+            label: label || (isIncrease ? 'Entrada inventario e-commerce' : 'Salida inventario e-commerce'),
+            type: isIncrease ? 0 : 1,
+            movement: isIncrease ? 'in' : 'out',
+            ...extraFields
+        };
+
+        if (movementDate) {
+            payload.movementdate = movementDate;
+        }
+
+        return this.request('POST', '/stockmovements', payload);
     }
 
     /**
@@ -184,13 +353,26 @@ class DolibarrService {
     async syncCustomer(userData) {
         try {
             // Buscar si el cliente ya existe en Dolibarr por email
-            const existingCustomers = await this.request('GET', `/thirdparties?email=${userData.email}`);
+            const emailFilter = encodeURIComponent(`(t.email:=:'${userData.email.replace(/'/g, "''")}')`);
+            const existingCustomers = await this.request(
+                'GET',
+                `/thirdparties?limit=1&sqlfilters=${emailFilter}`,
+                null,
+                { allow404: true, mark404As: 'info', reference: userData.email }
+            ) || [];
             
             let customerId = null;
+            const normalizeId = (value) => {
+                if (value === null || value === undefined) {
+                    return null;
+                }
+                const parsed = parseInt(value, 10);
+                return Number.isNaN(parsed) ? value : parsed;
+            };
             
             if (existingCustomers && existingCustomers.length > 0) {
                 // Cliente existe, actualizar
-                customerId = existingCustomers[0].id;
+                customerId = normalizeId(existingCustomers[0].id);
                 const updateData = {
                     name: userData.company || `${userData.first_name} ${userData.last_name}`,
                     firstname: userData.first_name,
@@ -210,6 +392,26 @@ class DolibarrService {
                 console.log(`✅ Cliente actualizado en Dolibarr: ${customerId}`);
             } else {
                 // Cliente no existe, crear nuevo
+                const generateCustomerCode = () => {
+                    const base = userData.code_client
+                        || userData.company
+                        || `${userData.first_name || ''}${userData.last_name || ''}`
+                        || (userData.email ? userData.email.split('@')[0] : '')
+                        || 'CLIENTE';
+
+                    const normalized = base.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                    const sanitized = normalized.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+
+                    if (sanitized.length >= 3) {
+                        return sanitized.slice(0, 12);
+                    }
+
+                    const timestamp = Date.now().toString().slice(-6);
+                    return `CLI${timestamp}`;
+                };
+
+                const customerCode = generateCustomerCode();
+
                 const createData = {
                     name: userData.company || `${userData.first_name} ${userData.last_name}`,
                     firstname: userData.first_name,
@@ -223,11 +425,12 @@ class DolibarrService {
                     country: userData.country || 'MX',
                     client: 1, // Es cliente
                     prospect: 0,
-                    status: 1 // Activo
+                    status: 1, // Activo
+                    code_client: 'auto'
                 };
                 
                 const result = await this.request('POST', '/thirdparties', createData);
-                customerId = result.id;
+                customerId = normalizeId(result?.id ?? result);
                 console.log(`✅ Cliente creado en Dolibarr: ${customerId}`);
             }
             
@@ -354,19 +557,23 @@ class DolibarrService {
             
             // Intentar actualizar usando el endpoint de productos (algunas versiones de Dolibarr lo permiten)
             // Si no funciona, el stock se mantendrá desincronizado y deberá actualizarse manualmente
-            try {
-                // Algunas APIs de Dolibarr permiten actualizar stock_reel directamente
-                await this.request('PUT', `/products/${product.id}`, {
-                    stock_reel: newStock
-                });
-                console.log(`✅ Stock actualizado en Dolibarr para ${sku}: ${currentStock} → ${newStock}`);
+            const difference = newStock - currentStock;
+
+            if (difference === 0) {
                 return true;
-            } catch (updateError) {
-                // Si no se puede actualizar directamente, solo informar
-                console.warn(`⚠️ No se pudo actualizar stock en Dolibarr para ${sku}. Stock local: ${newStock}, Stock Dolibarr: ${currentStock}`);
-                console.warn(`   Actualiza manualmente el stock en Dolibarr o configura movimientos de stock`);
-                return false;
             }
+
+            await this.createStockMovement({
+                productId: product.id,
+                productRef: product.ref || sku,
+                quantity: difference,
+                label: difference > 0
+                    ? `Ajuste positivo desde e-commerce (+${difference})`
+                    : `Ajuste negativo desde e-commerce (${difference})`
+            });
+
+            console.log(`✅ Movimiento de stock registrado en Dolibarr para ${sku}: ${currentStock} → ${newStock}`);
+            return true;
         } catch (error) {
             console.error(`❌ Error actualizando stock en Dolibarr para SKU ${sku}:`, error.message);
             return false;
@@ -403,9 +610,16 @@ class DolibarrService {
                     const product = productResult.rows[0];
                     await this.syncProduct(product);
                     
-                    // Actualizar stock en Dolibarr después de la venta
-                    // El stock ya fue actualizado en la BD local, ahora sincronizamos con Dolibarr
-                    await this.updateProductStock(item.product_sku, product.stock);
+                    // Registrar movimiento de salida en Dolibarr
+                    try {
+                        await this.createStockMovement({
+                            productRef: item.product_sku,
+                            quantity: -item.quantity,
+                            label: `Venta e-commerce ${orderData.order_number || ''}`.trim()
+                        });
+                    } catch (movementError) {
+                        console.error(`⚠️ Error registrando movimiento de stock para ${item.product_sku}:`, movementError.message);
+                    }
                 }
                 
                 orderItems.push({
@@ -418,7 +632,7 @@ class DolibarrService {
             }
             
             const orderDataDolibarr = {
-                socid: customerId,
+                socid: normalizeId(customerId),
                 date: new Date(orderData.created_at).toISOString().split('T')[0],
                 lines: orderItems,
                 note_public: orderData.notes || '',
@@ -461,8 +675,16 @@ class DolibarrService {
                 }
                 
                 if (currentStock !== null && currentStock !== undefined) {
-                    // El stock ya fue restaurado en la BD local, ahora sincronizamos con Dolibarr
-                    await this.updateProductStock(item.product_sku, currentStock);
+                    // Registrar movimiento de entrada en Dolibarr para restaurar inventario
+                    try {
+                        await this.createStockMovement({
+                            productRef: item.product_sku,
+                            quantity: item.quantity,
+                            label: `Cancelación e-commerce - devolución ${item.product_sku}`
+                        });
+                    } catch (movementError) {
+                        console.error(`⚠️ Error registrando devolución de stock para ${item.product_sku}:`, movementError.message);
+                    }
                 }
             }
             

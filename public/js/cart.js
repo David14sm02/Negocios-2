@@ -5,6 +5,7 @@ class Cart {
         this.items = [];
         this.total = 0;
         this.isProcessingCheckout = false;
+        this.cartEventsBound = false;
         this.init();
     }
 
@@ -316,7 +317,13 @@ class Cart {
                         <p class="cart-item-price">${Utils.formatPrice(item.price)}</p>
                         <div class="cart-item-controls">
                             <button class="btn-quantity" data-action="decrease" data-product-id="${productId}">-</button>
-                            <span class="cart-item-quantity">${item.quantity}</span>
+                            <input
+                                type="number"
+                                class="cart-item-quantity"
+                                value="${item.quantity}"
+                                min="1"
+                                data-product-id="${productId}"
+                            >
                             <button class="btn-quantity" data-action="increase" data-product-id="${productId}">+</button>
                             <button class="btn-remove" data-product-id="${productId}">
                                 <i class="fas fa-trash"></i>
@@ -334,8 +341,14 @@ class Cart {
 
     // Bind eventos para items del carrito
     bindCartItemEvents() {
+        if (this.cartEventsBound) {
+            return;
+        }
+
         const cartContent = document.getElementById('cartContent');
         if (!cartContent) return;
+
+        this.cartEventsBound = true;
 
         cartContent.addEventListener('click', (e) => {
             // Obtener el productId del botón clickeado o de su contenedor
@@ -364,6 +377,34 @@ class Cart {
                 }
             } else if (e.target.classList.contains('btn-remove') || e.target.closest('.btn-remove')) {
                 this.removeItem(productIdNum);
+            }
+        });
+
+        cartContent.addEventListener('change', (e) => {
+            if (!e.target.classList.contains('cart-item-quantity')) {
+                return;
+            }
+
+            const input = e.target;
+            const productId = parseInt(input.dataset.productId, 10);
+            let newQuantity = parseInt(input.value, 10);
+
+            if (Number.isNaN(newQuantity) || newQuantity < 1) {
+                newQuantity = 1;
+            }
+
+            input.value = newQuantity;
+            this.updateQuantity(productId, newQuantity);
+        });
+
+        cartContent.addEventListener('keydown', (e) => {
+            if (!e.target.classList.contains('cart-item-quantity')) {
+                return;
+            }
+
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                e.target.blur();
             }
         });
     }
