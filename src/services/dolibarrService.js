@@ -631,8 +631,9 @@ class DolibarrService {
                 });
             }
             
+            const numericSocId = Number.parseInt(customerId, 10);
             const orderDataDolibarr = {
-                socid: normalizeId(customerId),
+                socid: Number.isNaN(numericSocId) ? customerId : numericSocId,
                 date: new Date(orderData.created_at).toISOString().split('T')[0],
                 lines: orderItems,
                 note_public: orderData.notes || '',
