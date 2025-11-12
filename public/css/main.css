@@ -762,17 +762,23 @@ section {
 }
 
 .cart-item-quantity {
-    min-width: 32px;
+    width: 48px;
     height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    text-align: center;
     background-color: var(--bg-primary);
     border: 1px solid var(--neutral-200);
     border-radius: var(--border-radius-md);
     font-size: 0.875rem;
     font-weight: 600;
     color: var(--text-primary);
+    padding: 0;
+    -moz-appearance: textfield;
+}
+
+.cart-item-quantity::-webkit-outer-spin-button,
+.cart-item-quantity::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
 }
 
 .btn-remove {

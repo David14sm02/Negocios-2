@@ -278,6 +278,26 @@ class Database {
             await this.query(`CREATE INDEX IF NOT EXISTS idx_articles_slug ON articles(slug)`);
             await this.query(`CREATE INDEX IF NOT EXISTS idx_articles_published ON articles(is_published)`);
 
+            // Tabla de logs de integración (Dolibarr, Stripe, etc.)
+            await this.query(`
+                CREATE TABLE IF NOT EXISTS integration_logs (
+                    id SERIAL PRIMARY KEY,
+                    source VARCHAR(50) NOT NULL DEFAULT 'dolibarr',
+                    direction VARCHAR(20) NOT NULL DEFAULT 'outbound',
+                    reference VARCHAR(255),
+                    action VARCHAR(100),
+                    status VARCHAR(20) NOT NULL,
+                    request_payload JSONB,
+                    response_payload JSONB,
+                    error_message TEXT,
+                    created_at TIMESTAMP DEFAULT NOW()
+                )
+            `);
+
+            await this.query(`CREATE INDEX IF NOT EXISTS idx_integration_logs_created_at ON integration_logs(created_at DESC)`);
+            await this.query(`CREATE INDEX IF NOT EXISTS idx_integration_logs_source ON integration_logs(source)`);
+            await this.query(`CREATE INDEX IF NOT EXISTS idx_integration_logs_status ON integration_logs(status)`);
+
             console.log('✅ Tablas creadas exitosamente');
         } catch (error) {
             console.error('❌ Error al crear tablas:', error);
