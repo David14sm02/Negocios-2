@@ -6,6 +6,29 @@ const { stripe, getSuccessUrl, getCancelUrl } = require('../services/stripeServi
 
 const router = express.Router();
 
+const ensureSessionIdPlaceholder = (url) => {
+    if (!url) return url;
+    if (url.includes('{CHECKOUT_SESSION_ID}')) {
+        return url;
+    }
+    const [base, hash] = url.split('#');
+    const separator = base.includes('?') ? '&' : '?';
+    return `${base}${separator}session_id={CHECKOUT_SESSION_ID}${hash ? `#${hash}` : ''}`;
+};
+
+const appendQueryParam = (url, key, value) => {
+    if (!url) return url;
+    const encodedKey = encodeURIComponent(key);
+    const hasParam = new RegExp(`[?&]${encodedKey}=`).test(url);
+    if (hasParam) {
+        return url;
+    }
+    const [base, hash] = url.split('#');
+    const separator = base.includes('?') ? '&' : '?';
+    const param = `${encodedKey}=${encodeURIComponent(value)}`;
+    return `${base}${separator}${param}${hash ? `#${hash}` : ''}`;
+};
+
 router.post('/checkout', authenticateToken, validateCheckoutSession, async (req, res, next) => {
     try {
         const userId = req.user.id;
@@ -88,12 +111,21 @@ router.post('/checkout', authenticateToken, validateCheckoutSession, async (req,
             },
         }));
 
+        const baseSuccessUrl = success_url || getSuccessUrl();
+        const baseCancelUrl = cancel_url || getCancelUrl();
+
+        let successUrl = appendQueryParam(baseSuccessUrl, 'order_id', order.id);
+        successUrl = ensureSessionIdPlaceholder(successUrl);
+
+        let cancelUrl = appendQueryParam(baseCancelUrl, 'order_id', order.id);
+        cancelUrl = ensureSessionIdPlaceholder(cancelUrl);
+
         const checkoutSession = await stripe.checkout.sessions.create({
             mode: 'payment',
             customer_email: req.user.email,
             line_items: lineItems,
-            success_url: success_url || getSuccessUrl(),
-            cancel_url: cancel_url || getCancelUrl(),
+            success_url: successUrl,
+            cancel_url: cancelUrl,
             metadata: {
                 order_id: order.id,
                 order_number: order.order_number,

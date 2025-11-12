@@ -516,8 +516,8 @@ class Cart {
             const origin = window.location.origin;
             const checkoutResponse = await this.apiClient.createCheckoutSession({
                 order_id: order.id,
-                success_url: `${origin}/checkout/success`,
-                cancel_url: `${origin}/checkout/cancel`
+                success_url: `${origin}/checkout/success?order_id=${order.id}&session_id={CHECKOUT_SESSION_ID}`,
+                cancel_url: `${origin}/checkout/cancel?order_id=${order.id}&session_id={CHECKOUT_SESSION_ID}`
             });
 
             const checkoutUrl = checkoutResponse?.data?.url;

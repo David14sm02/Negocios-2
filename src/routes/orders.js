@@ -3,6 +3,7 @@ const db = require('../config/database');
 const { validateOrder, validateId } = require('../middleware/validation');
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
 const dolibarrService = require('../services/dolibarrService');
+const { stripe, extractReceiptUrl } = require('../services/stripeService');
 
 const router = express.Router();
 
@@ -131,11 +132,13 @@ router.post('/', authenticateToken, validateOrder, async (req, res, next) => {
             }))
         };
 
-        // Sincronizar con Dolibarr automáticamente (sin bloquear la respuesta)
+        // Sincronizar con Dolibarr antes de responder (para funciones serverless)
         if (process.env.DOLIBARR_URL && process.env.DOLIBARR_AUTO_SYNC !== 'false') {
-            dolibarrService.syncOrder(orderWithItems, db).catch(error => {
+            try {
+                await dolibarrService.syncOrder(orderWithItems, db);
+            } catch (error) {
                 console.error('⚠️ Error sincronizando orden con Dolibarr (no crítico):', error.message);
-            });
+            }
         }
 
         res.status(201).json({
@@ -182,6 +185,8 @@ router.get('/', authenticateToken, async (req, res, next) => {
                 o.payment_method,
                 o.payment_status,
                 o.notes,
+                o.receipt_url,
+                o.invoice_pdf,
                 o.created_at,
                 o.updated_at,
                 json_agg(
@@ -201,7 +206,8 @@ router.get('/', authenticateToken, async (req, res, next) => {
             ${whereClause}
             GROUP BY o.id, o.order_number, o.status, o.total, o.subtotal, 
                      o.tax_amount, o.shipping_amount, o.discount_amount,
-                     o.payment_method, o.payment_status, o.notes, o.created_at, o.updated_at
+                     o.payment_method, o.payment_status, o.notes, o.receipt_url,
+                     o.invoice_pdf, o.created_at, o.updated_at
             ORDER BY o.created_at DESC
             LIMIT $${paramCount + 1} OFFSET $${paramCount + 2}
         `, [...queryParams, parseInt(limit), offset]);
@@ -337,31 +343,33 @@ router.put('/:id/cancel', authenticateToken, validateId, async (req, res, next) 
             }
         });
 
-        // Sincronizar cancelación con Dolibarr (sin bloquear la respuesta)
+        // Sincronizar cancelación con Dolibarr antes de responder
         if (process.env.DOLIBARR_URL && process.env.DOLIBARR_AUTO_SYNC !== 'false') {
-            // Obtener productos actualizados con stock restaurado después de la transacción
-            const updatedProductsResult = await db.query(`
-                SELECT id, sku, name, stock 
-                FROM products 
-                WHERE id = ANY($1)
-            `, [itemsResult.rows.map(item => item.product_id)]);
-            
-            const cancellationData = {
-                items: itemsResult.rows.map(item => {
-                    const updatedProduct = updatedProductsResult.rows.find(p => p.id === item.product_id);
-                    return {
-                        product_id: item.product_id,
-                        product_sku: item.sku,
-                        product_name: item.name,
-                        quantity: item.quantity,
-                        current_stock: updatedProduct ? updatedProduct.stock : null
-                    };
-                })
-            };
-            
-            dolibarrService.syncOrderCancellation(cancellationData, db).catch(error => {
+            try {
+                // Obtener productos actualizados con stock restaurado después de la transacción
+                const updatedProductsResult = await db.query(`
+                    SELECT id, sku, name, stock 
+                    FROM products 
+                    WHERE id = ANY($1)
+                `, [itemsResult.rows.map(item => item.product_id)]);
+                
+                const cancellationData = {
+                    items: itemsResult.rows.map(item => {
+                        const updatedProduct = updatedProductsResult.rows.find(p => p.id === item.product_id);
+                        return {
+                            product_id: item.product_id,
+                            product_sku: item.sku,
+                            product_name: item.name,
+                            quantity: item.quantity,
+                            current_stock: updatedProduct ? updatedProduct.stock : null
+                        };
+                    })
+                };
+                
+                await dolibarrService.syncOrderCancellation(cancellationData, db);
+            } catch (error) {
                 console.error('⚠️ Error sincronizando cancelación con Dolibarr (no crítico):', error.message);
-            });
+            }
         }
 
         res.json({
@@ -449,6 +457,175 @@ router.get('/admin/all', authenticateToken, requireAdmin, async (req, res, next)
             }
         });
     } catch (error) {
+        next(error);
+    }
+});
+
+// POST /api/orders/confirm-payment - Confirmar pago manual (fallback)
+router.post('/confirm-payment', authenticateToken, async (req, res, next) => {
+    const { session_id: sessionId } = req.body || {};
+
+    if (!sessionId || typeof sessionId !== 'string') {
+        return res.status(400).json({
+            success: false,
+            error: 'session_id es requerido'
+        });
+    }
+
+    try {
+        const session = await stripe.checkout.sessions.retrieve(sessionId, {
+            expand: ['payment_intent.latest_charge', 'invoice']
+        });
+
+        if (!session) {
+            return res.status(404).json({
+                success: false,
+                error: 'Sesión de pago no encontrada'
+            });
+        }
+
+        const orderId = session.metadata?.order_id ? parseInt(session.metadata.order_id, 10) : null;
+        if (!orderId) {
+            return res.status(400).json({
+                success: false,
+                error: 'La sesión de pago no contiene información de la orden'
+            });
+        }
+
+        const userId = req.user.id;
+        if (session.metadata?.user_id && parseInt(session.metadata.user_id, 10) !== userId) {
+            return res.status(403).json({
+                success: false,
+                error: 'No tienes permisos para confirmar esta orden'
+            });
+        }
+
+        let paymentIntent = session.payment_intent;
+        if (!paymentIntent) {
+            return res.status(400).json({
+                success: false,
+                error: 'No se pudo obtener el Payment Intent asociado'
+            });
+        }
+
+        if (typeof paymentIntent === 'string') {
+            paymentIntent = await stripe.paymentIntents.retrieve(paymentIntent, {
+                expand: ['latest_charge']
+            });
+        }
+
+        const receiptUrl = extractReceiptUrl(paymentIntent);
+        let invoicePdf = null;
+
+        if (session.invoice) {
+            const invoice = typeof session.invoice === 'string'
+                ? await stripe.invoices.retrieve(session.invoice)
+                : session.invoice;
+            invoicePdf = invoice?.invoice_pdf || null;
+        }
+
+        const paymentStatus = session.payment_status === 'paid'
+            ? 'succeeded'
+            : (paymentIntent?.status || session.payment_status || 'processing');
+
+        const shouldUpdateStatus = paymentStatus === 'succeeded' ? 'processing' : null;
+        const amountPaid = session.amount_total != null
+            ? session.amount_total / 100
+            : (paymentIntent?.amount_received ?? 0) / 100;
+        const currency = (session.currency || paymentIntent?.currency || 'mxn').toLowerCase();
+
+        const paymentDetails = {
+            checkout_session: session.id,
+            payment_intent: paymentIntent?.id || null,
+            payment_status: session.payment_status,
+            payment_method: paymentIntent?.payment_method || null,
+            receipt_url: receiptUrl || null
+        };
+
+        const updateResult = await db.query(`
+            UPDATE orders
+            SET 
+                payment_status = $1,
+                status = CASE WHEN $2 IS NOT NULL AND status = 'pending' THEN $2 ELSE status END,
+                amount_paid = COALESCE($3, amount_paid),
+                currency = $4,
+                receipt_url = COALESCE($5, receipt_url),
+                invoice_pdf = COALESCE($6, invoice_pdf),
+                stripe_checkout_session_id = COALESCE(stripe_checkout_session_id, $7),
+                stripe_payment_intent_id = COALESCE(stripe_payment_intent_id, $8),
+                payment_details = COALESCE(payment_details, '{}'::jsonb) || $9::jsonb,
+                updated_at = NOW()
+            WHERE id = $10 AND user_id = $11
+            RETURNING id
+        `, [
+            paymentStatus,
+            shouldUpdateStatus,
+            amountPaid || null,
+            currency,
+            receiptUrl || null,
+            invoicePdf || null,
+            session.id,
+            paymentIntent?.id || null,
+            JSON.stringify(paymentDetails),
+            orderId,
+            userId
+        ]);
+
+        if (updateResult.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                error: 'Orden no encontrada o no pertenece al usuario'
+            });
+        }
+
+        const orderResult = await db.query(`
+            SELECT 
+                o.id,
+                o.order_number,
+                o.status,
+                o.total,
+                o.subtotal,
+                o.tax_amount,
+                o.shipping_amount,
+                o.discount_amount,
+                o.payment_method,
+                o.payment_status,
+                o.notes,
+                o.receipt_url,
+                o.invoice_pdf,
+                o.created_at,
+                o.updated_at,
+                json_agg(
+                    json_build_object(
+                        'id', oi.id,
+                        'product_id', oi.product_id,
+                        'product_name', p.name,
+                        'product_sku', p.sku,
+                        'quantity', oi.quantity,
+                        'price', oi.price,
+                        'total', oi.total
+                    )
+                ) FILTER (WHERE oi.id IS NOT NULL) as items
+            FROM orders o
+            LEFT JOIN order_items oi ON o.id = oi.order_id
+            LEFT JOIN products p ON oi.product_id = p.id
+            WHERE o.id = $1 AND o.user_id = $2
+            GROUP BY o.id, o.order_number, o.status, o.total, o.subtotal, 
+                     o.tax_amount, o.shipping_amount, o.discount_amount,
+                     o.payment_method, o.payment_status, o.notes, o.receipt_url,
+                     o.invoice_pdf, o.created_at, o.updated_at
+        `, [orderId, userId]);
+
+        res.json({
+            success: true,
+            data: {
+                order: orderResult.rows[0] || null
+            }
+        });
+    } catch (error) {
+        if (error?.raw?.message) {
+            console.error('Stripe error al confirmar pago:', error.raw.message);
+        }
         next(error);
     }
 });

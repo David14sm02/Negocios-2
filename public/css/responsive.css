@@ -151,6 +151,15 @@
         width: 100%;
         align-items: flex-start;
     }
+
+    .order-documents {
+        justify-content: flex-start;
+    }
+
+    .order-document-link {
+        width: 100%;
+        justify-content: center;
+    }
     
     /* Typography */
     h1 { font-size: 2rem; }
