@@ -234,6 +234,10 @@ class ApiClient {
         return this.put(`/orders/${id}/cancel`);
     }
 
+    async confirmOrderPayment(sessionId) {
+        return this.post('/orders/confirm-payment', { session_id: sessionId });
+    }
+
     // ===== PAGOS / STRIPE =====
     async createCheckoutSession({ order_id, success_url, cancel_url }) {
         const payload = { order_id };

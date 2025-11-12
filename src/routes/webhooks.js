@@ -45,6 +45,7 @@ const buildOrderUpdates = (eventType, payload, currentOrder) => {
         case 'payment_intent.succeeded':
             updates.payment_status = 'succeeded';
             updates.stripe_payment_intent_id = payload.id;
+            const receiptUrl = extractReceiptUrl(payload);
             if (payload.amount_received != null) {
                 updates.amount_paid = payload.amount_received / 100;
             }
@@ -52,10 +53,22 @@ const buildOrderUpdates = (eventType, payload, currentOrder) => {
                 updates.currency = payload.currency;
             }
             mergeDetails.payment_method = payload.payment_method || null;
-            mergeDetails.receipt_url = extractReceiptUrl(payload);
+            mergeDetails.receipt_url = receiptUrl;
+            if (receiptUrl) {
+                updates.receipt_url = receiptUrl;
+            }
             mergeDetails.last_payment_error = payload.last_payment_error || null;
             if (currentOrder.status === 'pending') {
                 updates.status = 'processing';
+            }
+            break;
+        case 'invoice.finalized':
+            updates.invoice_pdf = payload.invoice_pdf || null;
+            if (payload.amount_paid != null) {
+                updates.amount_paid = payload.amount_paid / 100;
+            }
+            if (payload.currency) {
+                updates.currency = payload.currency;
             }
             break;
         case 'payment_intent.payment_failed':

@@ -352,6 +352,42 @@
     color: var(--text-secondary);
 }
 
+.order-documents {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+    width: 100%;
+}
+
+.order-document-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    padding: 0.4rem 0.75rem;
+}
+
+.order-document-link i {
+    font-size: 0.85rem;
+}
+
+.order-documents-placeholder {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    background-color: rgba(59, 130, 246, 0.08);
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--border-radius-md);
+}
+
+.order-documents-placeholder i {
+    color: var(--primary-color);
+}
+
 .orders-empty,
 .orders-error {
     background-color: var(--bg-primary);

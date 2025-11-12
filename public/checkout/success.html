@@ -126,62 +126,7 @@
     <script src="../js/api.js"></script>
     <script src="../js/main.js"></script>
     <script src="../js/cart.js"></script>
-    <script>
-        document.getElementById('currentYear').textContent = new Date().getFullYear();
-
-        const urlParams = new URLSearchParams(window.location.search);
-        const sessionId = urlParams.get('session_id');
-
-        if (sessionId && window.apiClient && window.apiClient.isAuthenticated()) {
-            const orderNumberEl = document.getElementById('orderNumber');
-            if (orderNumberEl) {
-                window.apiClient.getOrders({ limit: 1 }).then(response => {
-                    if (response?.success && response?.data?.length > 0) {
-                        const latestOrder = response.data[0];
-                        if (latestOrder?.order_number) {
-                            orderNumberEl.textContent = latestOrder.order_number;
-                        }
-                        if (latestOrder?.id) {
-                            const viewOrderBtn = document.getElementById('viewOrderBtn');
-                            if (viewOrderBtn) {
-                                viewOrderBtn.href = `../catalog.html?order=${latestOrder.id}`;
-                            }
-                        }
-                    }
-                }).catch(() => {
-                    if (orderNumberEl) {
-                        orderNumberEl.textContent = sessionId.substring(0, 20) + '...';
-                    }
-                });
-            }
-        } else if (sessionId) {
-            const orderNumberEl = document.getElementById('orderNumber');
-            if (orderNumberEl) {
-                orderNumberEl.textContent = sessionId.substring(0, 20) + '...';
-            }
-        }
-
-        const viewOrderBtn = document.getElementById('viewOrderBtn');
-        if (viewOrderBtn) {
-            if (window.apiClient && window.apiClient.isAuthenticated()) {
-                if (!viewOrderBtn.href || viewOrderBtn.href.includes('#')) {
-                    viewOrderBtn.href = '../catalog.html#orders';
-                }
-                viewOrderBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    window.location.href = viewOrderBtn.href;
-                });
-            } else {
-                viewOrderBtn.style.display = 'none';
-            }
-        }
-
-        if (window.cart && typeof window.cart.clearCart === 'function') {
-            window.cart.clearCart().catch(err => {
-                console.warn('No se pudo limpiar el carrito:', err);
-            });
-        }
-    </script>
+    <script src="../js/checkout-success.js"></script>
 </body>
 </html>
 

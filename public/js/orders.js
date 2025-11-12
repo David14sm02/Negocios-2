@@ -88,6 +88,26 @@ class OrdersPage {
         const subtotal = Utils.formatPrice(order.subtotal ?? order.total ?? 0);
         const total = Utils.formatPrice(order.total ?? 0);
         const items = Array.isArray(order.items) ? order.items : [];
+        const hasReceipt = Boolean(order.receipt_url);
+        const hasInvoice = Boolean(order.invoice_pdf);
+
+        const documents = [];
+        if (hasReceipt) {
+            documents.push(`
+                <a href="${order.receipt_url}" target="_blank" rel="noopener" class="btn btn-outline order-document-link">
+                    <i class="fas fa-receipt"></i>
+                    Ver recibo
+                </a>
+            `);
+        }
+        if (hasInvoice) {
+            documents.push(`
+                <a href="${order.invoice_pdf}" target="_blank" rel="noopener" class="btn btn-outline order-document-link">
+                    <i class="fas fa-file-invoice"></i>
+                    Descargar factura
+                </a>
+            `);
+        }
 
         const itemsList = items.map(item => `
             <li class="order-item">
@@ -120,6 +140,14 @@ class OrdersPage {
                     <div class="order-summary">
                         <span class="order-subtotal">Subtotal: ${subtotal}</span>
                         <span class="order-total">Total pagado: ${total}</span>
+                        <div class="order-documents">
+                            ${documents.length > 0 ? documents.join('') : `
+                                <div class="order-documents-placeholder">
+                                    <i class="fas fa-info-circle"></i>
+                                    <span>Los comprobantes estarán disponibles una vez confirmado el pago.</span>
+                                </div>
+                            `}
+                        </div>
                     </div>
                 </footer>
             </article>
