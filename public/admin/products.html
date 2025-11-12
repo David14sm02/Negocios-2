@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración - Productos | NetTech Solutions</title>
+    <meta name="description" content="Panel para gestionar productos, inventario y catálogo del e-commerce.">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../css/colors.css">
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="../css/responsive.css">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <!-- Logo -->
+                <div class="logo">
+                    <a href="../index.html">
+                        <i class="fas fa-network-wired"></i>
+                        <span>NetTech Solutions</span>
+                    </a>
+                </div>
+
+                <!-- Navigation -->
+                <nav class="nav">
+                    <ul class="nav-list">
+                        <li><a href="../index.html" class="nav-link">Inicio</a></li>
+                        <li><a href="../catalog.html" class="nav-link">Catálogo</a></li>
+                        <li><a href="../blog.html" class="nav-link">Blog</a></li>
+                        <li><a href="../about.html" class="nav-link">Acerca de</a></li>
+                        <li class="admin-only" data-admin-display="inline-block"><a href="products.html" class="nav-link active">Administrar</a></li>
+                    </ul>
+                </nav>
+
+                <!-- Header Actions -->
+                <div class="header-actions">
+                    <div class="search-box">
+                        <input type="text" placeholder="Buscar productos..." id="searchInput">
+                        <button type="button" id="searchBtn">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+
+                    <div class="cart-icon" id="cartIcon">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="cart-count" id="cartCount">0</span>
+                    </div>
+
+                    <div class="user-profile" id="userProfile"></div>
+
+                    <button class="mobile-menu-btn" id="mobileMenuBtn">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="admin-page">
+        <div class="container">
+            <div class="admin-header">
+                <div>
+                    <h1>Gestión de Productos</h1>
+                    <p>Administra el catálogo, controla el inventario y crea nuevos productos para la tienda en línea.</p>
+                </div>
+                <div class="admin-header-actions">
+                    <button type="button" class="btn btn-outline" id="refreshProductsBtn">
+                        <i class="fas fa-sync-alt"></i>
+                        Recargar lista
+                    </button>
+                </div>
+            </div>
+
+            <div class="admin-content">
+                <section class="admin-card">
+                    <h2>Inventario actual</h2>
+                    <p class="admin-subtitle">Consulta el stock disponible y realiza ajustes rápidos en las existencias y stock mínimo.</p>
+
+                    <div class="table-responsive">
+                        <table class="admin-table" id="productsTable">
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>SKU</th>
+                                    <th>Precio</th>
+                                    <th>Inventario</th>
+                                    <th>Estado</th>
+                                    <th>Actualizado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="productsTableBody">
+                                <tr>
+                                    <td class="table-empty" colspan="7">Cargando productos...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="admin-pagination">
+                        <span class="pagination-info" id="paginationInfo">Página 1 de 1</span>
+                        <div class="admin-header-actions">
+                            <button type="button" class="btn btn-outline" id="prevPageBtn" disabled>
+                                <i class="fas fa-chevron-left"></i>
+                                Anterior
+                            </button>
+                            <button type="button" class="btn btn-primary" id="nextPageBtn" disabled>
+                                Siguiente
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="admin-card">
+                    <h2>Crear nuevo producto</h2>
+                    <p class="admin-subtitle">Completa la información esencial para publicar un producto en el catálogo.</p>
+
+                    <form id="createProductForm" class="admin-form" enctype="multipart/form-data">
+                        <div class="form-group">
+                            <label for="productName">Nombre</label>
+                            <input type="text" id="productName" name="name" placeholder="Cable Cat6 UTP 305m" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="productSku">SKU</label>
+                            <input type="text" id="productSku" name="sku" placeholder="CAT6-305M" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="productPrice">Precio</label>
+                            <input type="number" id="productPrice" name="price" min="0" step="0.01" placeholder="2500.00" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="productCategory">Categoría</label>
+                            <select id="productCategory" name="category_id" required>
+                                <option value="">Selecciona una categoría</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="productStock">Stock inicial</label>
+                            <input type="number" id="productStock" name="stock" min="0" step="1" value="0">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="productMinStock">Stock mínimo</label>
+                            <input type="number" id="productMinStock" name="min_stock" min="0" step="1" value="5">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="productBrand">Marca</label>
+                            <input type="text" id="productBrand" name="brand" placeholder="NetTech">
+                        </div>
+
+                        <div class="form-group" style="grid-column: 1 / -1;">
+                            <label>Imagen del producto</label>
+                            <div id="productImageDropzone" class="image-dropzone" data-admin-display="block">
+                                <input type="file" id="productImageInput" class="image-dropzone-input" accept="image/*">
+                                <div class="image-dropzone-content" id="productImageContent">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    <p>Arrastra y suelta la imagen aquí o haz clic para seleccionar</p>
+                                    <span class="image-dropzone-hint">Formatos soportados: JPG, PNG, GIF (máx. 2 MB)</span>
+                                </div>
+                                <div class="image-dropzone-preview hidden" id="productImagePreview">
+                                    <img alt="Previsualización" id="productImagePreviewImg">
+                                    <button type="button" class="btn btn-outline btn-sm" id="productImageRemoveBtn">
+                                        <i class="fas fa-times"></i> Quitar imagen
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="productWeight">Peso</label>
+                            <input type="text" id="productWeight" name="weight" placeholder="1.2 kg">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="productDimensions">Dimensiones</label>
+                            <textarea id="productDimensions" name="dimensions" placeholder='Ejemplo: {"length": "30 cm", "width": "20 cm", "height": "10 cm"}'></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="productSpecifications">Especificaciones (JSON)</label>
+                            <textarea id="productSpecifications" name="specifications" placeholder='Ejemplo: {"material": "Cobre", "frecuencia": "500 MHz"}'></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="productFeatures">Características</label>
+                            <textarea id="productFeatures" name="features" placeholder="Una característica por línea"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="productTags">Tags</label>
+                            <input type="text" id="productTags" name="tags" placeholder="cat6, cable, redes">
+                        </div>
+
+                        <div class="form-group" style="grid-column: 1 / -1;">
+                            <label for="productDescription">Descripción</label>
+                            <textarea id="productDescription" name="description" placeholder="Detalles técnicos, usos recomendados..."></textarea>
+                        </div>
+
+                        <div class="form-group form-check">
+                            <input type="checkbox" id="productFeatured" name="is_featured">
+                            <label for="productFeatured">Marcar como producto destacado</label>
+                        </div>
+
+                        <div class="admin-form-actions">
+                            <button type="button" class="btn btn-outline hidden" id="cancelEditBtn">
+                                Cancelar edición
+                            </button>
+                            <button type="reset" class="btn btn-outline" id="resetProductFormBtn">
+                                Limpiar
+                            </button>
+                            <button type="submit" class="btn btn-primary" id="submitProductBtn">
+                                <i class="fas fa-plus-circle"></i>
+                                Crear producto
+                            </button>
+                        </div>
+                    </form>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <i class="fas fa-network-wired"></i>
+                        <span>NetTech Solutions</span>
+                    </div>
+                    <p>Especialistas en soluciones profesionales para instalaciones de redes.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Enlaces Rápidos</h4>
+                    <ul>
+                        <li><a href="../catalog.html">Catálogo</a></li>
+                        <li><a href="../blog.html">Blog</a></li>
+                        <li><a href="../about.html">Acerca de</a></li>
+                        <li><a href="../index.html#contact">Contacto</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Categorías</h4>
+                    <ul id="footerCategories">
+                        <li><a href="../catalog.html?category=cables">Cables de Red</a></li>
+                        <li><a href="../catalog.html?category=conectores">Conectores</a></li>
+                        <li><a href="../catalog.html?category=equipos">Equipos</a></li>
+                        <li><a href="../catalog.html?category=herramientas">Herramientas</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Contacto</h4>
+                    <div class="contact-info">
+                        <p><i class="fas fa-phone"></i> +1 (555) 123-4567</p>
+                        <p><i class="fas fa-envelope"></i> info@nettechsolutions.com</p>
+                        <p><i class="fas fa-map-marker-alt"></i> Ciudad, País</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2024 NetTech Solutions. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Cart Sidebar -->
+    <div class="cart-sidebar" id="cartSidebar">
+        <div class="cart-header">
+            <h3>Carrito de Compras</h3>
+            <button class="cart-close" id="cartClose">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="cart-content" id="cartContent">
+            <div class="cart-empty">
+                <i class="fas fa-shopping-cart"></i>
+                <p>Tu carrito está vacío</p>
+            </div>
+        </div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>Total: $<span id="cartTotal">0.00</span></span>
+            </div>
+            <button class="btn btn-primary cart-checkout" id="checkoutBtn" disabled>
+                Proceder al Pago
+            </button>
+        </div>
+    </div>
+
+    <!-- Cart Overlay -->
+    <div class="cart-overlay" id="cartOverlay"></div>
+
+    <!-- JavaScript -->
+    <script src="../js/utils.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/cart.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="../js/admin-products.js"></script>
+</body>
+</html>
+

@@ -463,6 +463,7 @@ class ECommerceApp {
     // Configurar autenticación
     setupAuthentication() {
         this.renderUserProfile();
+        this.updateAdminUI();
         // Verificar si hay un token válido al cargar la página
         if (this.apiClient && this.apiClient.isAuthenticated()) {
             this.updateAuthUI(true);
@@ -547,6 +548,14 @@ class ECommerceApp {
         }
 
         if (isAuthenticated && currentUser) {
+            const isAdmin = this.apiClient?.isAdmin?.() ?? !!currentUser.is_admin;
+            const adminMenuItem = isAdmin ? `
+                        <a href="admin/products.html" class="user-menu-item admin-dashboard-link" role="menuitem">
+                            <i class="fas fa-tools"></i>
+                            Panel administrador
+                        </a>
+                        <div class="user-menu-divider admin-menu-divider"></div>
+            ` : '';
             const initial = (currentUser.first_name?.[0] || currentUser.email?.[0] || '?').toUpperCase();
             const displayName = currentUser.first_name || currentUser.email;
 
@@ -556,11 +565,12 @@ class ECommerceApp {
                         <div class="user-avatar">${initial}</div>
                         <div class="user-data">
                             <span class="user-name">${displayName}</span>
-                            <span class="user-status">Sesión activa</span>
+                            <span class="user-status">${isAdmin ? 'Administrador' : 'Sesión activa'}</span>
                         </div>
                         <i class="fas fa-chevron-down user-menu-icon"></i>
                     </button>
                     <div class="user-menu" id="userMenu" role="menu">
+                        ${adminMenuItem}
                         <a href="orders.html" class="user-menu-item" role="menuitem">
                             <i class="fas fa-box"></i>
                             Mis pedidos
@@ -582,6 +592,14 @@ class ECommerceApp {
                     event.stopPropagation();
                     const isOpen = this.userMenu.classList.toggle('open');
                     this.userMenuToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+                });
+            }
+
+            if (isAdmin) {
+                const adminLink = userProfile.querySelector('.admin-dashboard-link');
+                adminLink?.addEventListener('click', () => {
+                    this.userMenu?.classList.remove('open');
+                    this.userMenuToggle?.setAttribute('aria-expanded', 'false');
                 });
             }
 
@@ -615,6 +633,26 @@ class ECommerceApp {
             this.userMenu = null;
             this.userMenuToggle = null;
         }
+
+        this.updateAdminUI();
+    }
+
+    updateAdminUI() {
+        const adminElements = document.querySelectorAll('.admin-only');
+        if (!adminElements.length) {
+            return;
+        }
+
+        const isAdmin = this.apiClient?.isAdmin?.() === true || !!this.apiClient?.getCurrentUser?.()?.is_admin;
+
+        adminElements.forEach((element) => {
+            if (isAdmin) {
+                const displayValue = element.dataset.adminDisplay || element.dataset.authDisplay || '';
+                element.style.display = displayValue || '';
+            } else {
+                element.style.display = 'none';
+            }
+        });
     }
 
     handleUserMenuOutsideClick(event) {

@@ -18,7 +18,15 @@ const authenticateToken = async (req, res, next) => {
         
         // Verificar que el usuario existe y está activo
         const userResult = await db.query(
-            'SELECT id, email, first_name, last_name, is_active FROM users WHERE id = $1',
+            `SELECT 
+                id,
+                email,
+                first_name,
+                last_name,
+                is_active,
+                is_admin
+            FROM users 
+            WHERE id = $1`,
             [decoded.userId]
         );
 
@@ -80,7 +88,15 @@ const optionalAuth = async (req, res, next) => {
         if (token) {
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
             const userResult = await db.query(
-                'SELECT id, email, first_name, last_name, is_active FROM users WHERE id = $1',
+                `SELECT 
+                    id,
+                    email,
+                    first_name,
+                    last_name,
+                    is_active,
+                    is_admin
+                FROM users 
+                WHERE id = $1`,
                 [decoded.userId]
             );
 
