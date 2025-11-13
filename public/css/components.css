@@ -235,10 +235,15 @@
     gap: 2rem;
 }
 
-@media (min-width: 992px) {
-    .admin-content {
-        grid-template-columns: 2fr 1fr;
-    }
+.admin-toggle-group {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+}
+
+.admin-toggle-btn {
+    min-width: 150px;
 }
 
 .admin-card {
@@ -259,6 +264,36 @@
     font-size: 0.95rem;
     color: var(--text-secondary);
     margin-bottom: 1.5rem;
+}
+
+.admin-section-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+    gap: 2rem;
+    align-items: flex-start;
+}
+
+.admin-section-grid--products {
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+}
+
+.admin-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.admin-panel-form h3 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+@media (max-width: 1100px) {
+    .admin-section-grid,
+    .admin-section-grid--products {
+        grid-template-columns: minmax(0, 1fr);
+    }
 }
 
 .admin-table {

@@ -9,15 +9,99 @@ class CatalogManager {
         this.currentSort = 'name';
         this.maxPrice = 5000;
         this.currentView = 'grid';
+        this.categories = [];
+        this.categoryAliases = {};
+        this.defaultCategories = [
+            { id: 'default-cables', name: 'Cables de Red', slug: 'cables' },
+            { id: 'default-conectores', name: 'Conectores', slug: 'conectores' },
+            { id: 'default-equipos', name: 'Equipos de Red', slug: 'equipos' },
+            { id: 'default-herramientas', name: 'Herramientas', slug: 'herramientas' }
+        ];
         
         this.init();
     }
 
     async init() {
+        await this.loadCategories();
         await this.loadProducts();
         this.bindEvents();
         this.renderProducts();
         this.updateProductsCount();
+    }
+
+    async loadCategories() {
+        const filterContainer = document.querySelector('.filter-buttons');
+        let categoriesData = [];
+
+        if (window.apiClient) {
+            try {
+                const response = await window.apiClient.getCategories();
+                categoriesData = Array.isArray(response.data)
+                    ? response.data
+                    : response.data?.categories || [];
+            } catch (error) {
+                console.warn('⚠️ No se pudieron obtener categorías desde la API:', error);
+            }
+        }
+
+        this.categories = categoriesData.map(category => {
+            const labelSource = category?.name || category?.display_name || category?.label || category?.slug || category?.id;
+            const slug = this.createCategorySlug(category.slug || labelSource || category.id);
+            this.addCategoryAlias(category.name, slug);
+            this.addCategoryAlias(category.slug, slug);
+            this.addCategoryAlias(category.id, slug);
+            return {
+                ...category,
+                slug,
+                name: this.getCategoryDisplayName(labelSource, slug)
+            };
+        });
+
+        if (this.categories.length === 0) {
+            this.categories = this.defaultCategories.map(category => {
+                const slug = this.createCategorySlug(category.slug || category.name || category.id);
+                this.addCategoryAlias(category.name, slug);
+                this.addCategoryAlias(category.slug, slug);
+                this.addCategoryAlias(category.id, slug);
+                return {
+                    ...category,
+                    slug,
+                    name: this.getCategoryDisplayName(category.name, slug)
+                };
+            });
+        }
+
+        if (filterContainer && this.categories.length > 0) {
+            const buttons = [
+                '<button class="filter-btn active" data-category="all">Todas</button>'
+            ];
+
+            this.categories.forEach(category => {
+                const buttonLabel = this.getCategoryDisplayName(category.name, category.slug);
+                buttons.push(`
+                    <button class="filter-btn" data-category="${category.slug}" data-category-id="${category.id}">
+                        ${buttonLabel}
+                    </button>
+                `);
+            });
+
+            filterContainer.innerHTML = buttons.join('');
+        }
+    }
+
+    getCategoryDisplayName(nameSource, slugFallback) {
+        const safeName = (nameSource || '').toString().trim();
+        if (safeName) {
+            return safeName;
+        }
+
+        const slug = slugFallback || '';
+        if (!slug) return 'Categoría';
+
+        return slug
+            .split('-')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
     }
 
     // Cargar productos desde la API o JSON como fallback
@@ -38,12 +122,12 @@ class CatalogManager {
                             console.warn('Producto con ID inválido ignorado:', p);
                             return null;
                         }
-                        return {
+                    return {
                             id: productId.toString(),
                             name: p.name,
                             description: p.description || '',
                             price: parseFloat(p.price),
-                            category: (p.category_name || '').toLowerCase() || 'otros',
+                        category: this.normalizeCategory(p.category_slug || p.category_name || p.category),
                             sku: p.sku,
                             stock: p.stock || 0,
                             image: p.image_url || this.getPlaceholderImage(p.name)
@@ -63,7 +147,10 @@ class CatalogManager {
         try {
             const response = await fetch('data/products.json');
             const data = await response.json();
-            this.products = data.products;
+            this.products = data.products.map(product => ({
+                ...product,
+                category: this.normalizeCategory(product.category)
+            }));
             
             console.log(`📦 Cargados ${this.products.length} productos desde JSON (IDs iniciales: ${this.products.map(p => p.id).join(', ')})`);
             
@@ -136,6 +223,55 @@ class CatalogManager {
         return false;
     }
 
+    cleanCategoryKey(value) {
+        if (value === undefined || value === null) {
+            return '';
+        }
+        return String(value)
+            .trim()
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '');
+    }
+
+    createCategorySlug(value) {
+        const key = this.cleanCategoryKey(value);
+        return key
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '');
+    }
+
+    addCategoryAlias(value, slug) {
+        const key = this.cleanCategoryKey(value);
+        if (!key) return;
+        this.categoryAliases[key] = slug;
+    }
+
+    getCategorySlugByAlias(value) {
+        const key = this.cleanCategoryKey(value);
+        if (!key) return null;
+        return this.categoryAliases[key] || null;
+    }
+
+    normalizeCategory(categoryInput) {
+        if (!categoryInput) {
+            return 'otros';
+        }
+
+        const aliasMatch = this.getCategorySlugByAlias(categoryInput);
+        if (aliasMatch) {
+            return aliasMatch;
+        }
+
+        const slug = this.createCategorySlug(categoryInput);
+        if (!slug) {
+            return 'otros';
+        }
+
+        this.addCategoryAlias(categoryInput, slug);
+        return slug;
+    }
+
     // Generar imagen placeholder
     getPlaceholderImage(name) {
         return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk0YTNiOCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlbjwvdGV4dD48L3N2Zz4=';
@@ -143,7 +279,7 @@ class CatalogManager {
 
     // Obtener productos mock como fallback
     getMockProducts() {
-        return [
+        const mock = [
             {
                 id: '1',
                 name: 'Cable Cat6 UTP 305m',
@@ -185,6 +321,11 @@ class CatalogManager {
                 image: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk0YTNiOCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkNyaW1wZWFkb3JhPC90ZXh0Pjwvc3ZnPg=='
             }
         ];
+
+        return mock.map(product => ({
+            ...product,
+            category: this.normalizeCategory(product.category)
+        }));
     }
 
     // Bind eventos
@@ -218,6 +359,31 @@ class CatalogManager {
                 this.applyFilters();
             });
         }
+
+        // Colapsables en filtros
+        const collapsibleSections = document.querySelectorAll('.filter-collapse');
+        collapsibleSections.forEach(section => {
+            const toggleBtn = section.querySelector('.filter-toggle');
+            const content = section.querySelector('.filter-content');
+
+            if (section.classList.contains('is-open') && content) {
+                content.style.maxHeight = `${content.scrollHeight}px`;
+                section.classList.add('is-open');
+            }
+
+            if (!toggleBtn) return;
+
+            toggleBtn.addEventListener('click', () => {
+                const isOpen = section.classList.toggle('is-open');
+                if (!content) return;
+
+                if (isOpen) {
+                    content.style.maxHeight = `${content.scrollHeight}px`;
+                } else {
+                    content.style.maxHeight = null;
+                }
+            });
+        });
 
         // Cambio de vista
         const viewButtons = document.querySelectorAll('.view-btn');

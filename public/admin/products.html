@@ -83,155 +83,245 @@
                 </div>
             </div>
 
+            <div class="admin-toggle-group">
+                <button type="button" class="btn btn-primary admin-toggle-btn" data-section-target="categories">
+                    <i class="fas fa-folder-tree"></i> Categorías
+                </button>
+                <button type="button" class="btn btn-outline admin-toggle-btn" data-section-target="products">
+                    <i class="fas fa-box-open"></i> Productos
+                </button>
+            </div>
+
             <div class="admin-content">
-                <section class="admin-card">
-                    <h2>Inventario actual</h2>
-                    <p class="admin-subtitle">Consulta el stock disponible y realiza ajustes rápidos en las existencias y stock mínimo.</p>
 
-                    <div class="table-responsive">
-                        <table class="admin-table" id="productsTable">
-                            <thead>
-                                <tr>
-                                    <th>Producto</th>
-                                    <th>SKU</th>
-                                    <th>Precio</th>
-                                    <th>Inventario</th>
-                                    <th>Estado</th>
-                                    <th>Actualizado</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="productsTableBody">
-                                <tr>
-                                    <td class="table-empty" colspan="7">Cargando productos...</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div class="admin-pagination">
-                        <span class="pagination-info" id="paginationInfo">Página 1 de 1</span>
+                <section class="admin-card" data-admin-section="categories">
+                    <div class="admin-card-header">
+                        <h2>Gestión de categorías</h2>
                         <div class="admin-header-actions">
-                            <button type="button" class="btn btn-outline" id="prevPageBtn" disabled>
-                                <i class="fas fa-chevron-left"></i>
-                                Anterior
+                            <button type="button" class="btn btn-outline" id="refreshCategoriesBtn">
+                                <i class="fas fa-sync-alt"></i>
+                                Actualizar categorías
                             </button>
-                            <button type="button" class="btn btn-primary" id="nextPageBtn" disabled>
-                                Siguiente
-                                <i class="fas fa-chevron-right"></i>
-                            </button>
+                        </div>
+                    </div>
+                    <p class="admin-subtitle">Administra las categorías disponibles para organizar los productos del catálogo.</p>
+
+                    <div class="admin-section-grid">
+                        <div class="admin-panel admin-panel-list">
+                            <div class="table-responsive">
+                                <table class="admin-table" id="categoriesTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Categoría</th>
+                                            <th>Descripción</th>
+                                            <th>Productos activos</th>
+                                            <th>Estado</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="categoriesTableBody">
+                                        <tr>
+                                            <td class="table-empty" colspan="5">Cargando categorías...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="admin-panel admin-panel-form">
+                            <h3>Crear o editar categoría</h3>
+                            <form id="categoryForm" class="admin-form">
+                                <div class="form-group">
+                                    <label for="categoryName">Nombre</label>
+                                    <input type="text" id="categoryName" name="name" placeholder="Ej. Cables de Red" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="categoryParent">Categoría padre (opcional)</label>
+                                    <select id="categoryParent" name="parent_id">
+                                        <option value="">Sin categoría padre</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="categoryDescription">Descripción</label>
+                                    <textarea id="categoryDescription" name="description" placeholder="Describe brevemente la categoría"></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label for="categoryImageUrl">URL de imagen</label>
+                                    <input type="url" id="categoryImageUrl" name="image_url" placeholder="https://...">
+                                </div>
+                                <div class="form-group form-check">
+                                    <input type="checkbox" id="categoryIsActive" name="is_active" checked>
+                                    <label for="categoryIsActive">Categoría activa</label>
+                                </div>
+                                <div class="admin-form-actions">
+                                    <button type="button" class="btn btn-outline hidden" id="categoryCancelEditBtn">
+                                        Cancelar edición
+                                    </button>
+                                    <button type="reset" class="btn btn-outline" id="categoryResetBtn">
+                                        Limpiar
+                                    </button>
+                                    <button type="submit" class="btn btn-primary" id="categorySubmitBtn">
+                                        <i class="fas fa-folder-plus"></i>
+                                        Crear categoría
+                                    </button>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </section>
 
-                <section class="admin-card">
-                    <h2>Crear nuevo producto</h2>
-                    <p class="admin-subtitle">Completa la información esencial para publicar un producto en el catálogo.</p>
+                <section class="admin-card hidden" data-admin-section="products">
+                    <div class="admin-card-header">
+                        <h2>Gestión de productos</h2>
+                    </div>
+                    <p class="admin-subtitle">Consulta el inventario y completa la información esencial para publicar nuevos productos.</p>
 
-                    <form id="createProductForm" class="admin-form" enctype="multipart/form-data">
-                        <div class="form-group">
-                            <label for="productName">Nombre</label>
-                            <input type="text" id="productName" name="name" placeholder="Cable Cat6 UTP 305m" required>
-                        </div>
+                    <div class="admin-section-grid admin-section-grid--products">
+                        <div class="admin-panel admin-panel-list">
+                            <div class="table-responsive">
+                                <table class="admin-table" id="productsTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Producto</th>
+                                            <th>SKU</th>
+                                            <th>Precio</th>
+                                            <th>Inventario</th>
+                                            <th>Estado</th>
+                                            <th>Actualizado</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="productsTableBody">
+                                        <tr>
+                                            <td class="table-empty" colspan="7">Cargando productos...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
 
-                        <div class="form-group">
-                            <label for="productSku">SKU</label>
-                            <input type="text" id="productSku" name="sku" placeholder="CAT6-305M" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="productPrice">Precio</label>
-                            <input type="number" id="productPrice" name="price" min="0" step="0.01" placeholder="2500.00" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="productCategory">Categoría</label>
-                            <select id="productCategory" name="category_id" required>
-                                <option value="">Selecciona una categoría</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="productStock">Stock inicial</label>
-                            <input type="number" id="productStock" name="stock" min="0" step="1" value="0">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="productMinStock">Stock mínimo</label>
-                            <input type="number" id="productMinStock" name="min_stock" min="0" step="1" value="5">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="productBrand">Marca</label>
-                            <input type="text" id="productBrand" name="brand" placeholder="NetTech">
-                        </div>
-
-                        <div class="form-group" style="grid-column: 1 / -1;">
-                            <label>Imagen del producto</label>
-                            <div id="productImageDropzone" class="image-dropzone" data-admin-display="block">
-                                <input type="file" id="productImageInput" class="image-dropzone-input" accept="image/*">
-                                <div class="image-dropzone-content" id="productImageContent">
-                                    <i class="fas fa-cloud-upload-alt"></i>
-                                    <p>Arrastra y suelta la imagen aquí o haz clic para seleccionar</p>
-                                    <span class="image-dropzone-hint">Formatos soportados: JPG, PNG, GIF (máx. 2 MB)</span>
-                                </div>
-                                <div class="image-dropzone-preview hidden" id="productImagePreview">
-                                    <img alt="Previsualización" id="productImagePreviewImg">
-                                    <button type="button" class="btn btn-outline btn-sm" id="productImageRemoveBtn">
-                                        <i class="fas fa-times"></i> Quitar imagen
+                            <div class="admin-pagination">
+                                <span class="pagination-info" id="paginationInfo">Página 1 de 1</span>
+                                <div class="admin-header-actions">
+                                    <button type="button" class="btn btn-outline" id="prevPageBtn" disabled>
+                                        <i class="fas fa-chevron-left"></i>
+                                        Anterior
+                                    </button>
+                                    <button type="button" class="btn btn-primary" id="nextPageBtn" disabled>
+                                        Siguiente
+                                        <i class="fas fa-chevron-right"></i>
                                     </button>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="form-group">
-                            <label for="productWeight">Peso</label>
-                            <input type="text" id="productWeight" name="weight" placeholder="1.2 kg">
-                        </div>
+                        <div class="admin-panel admin-panel-form">
+                            <h3>Crear o editar producto</h3>
+                            <form id="createProductForm" class="admin-form" enctype="multipart/form-data">
+                                <div class="form-group">
+                                    <label for="productName">Nombre</label>
+                                    <input type="text" id="productName" name="name" placeholder="Cable Cat6 UTP 305m" required>
+                                </div>
 
-                        <div class="form-group">
-                            <label for="productDimensions">Dimensiones</label>
-                            <textarea id="productDimensions" name="dimensions" placeholder='Ejemplo: {"length": "30 cm", "width": "20 cm", "height": "10 cm"}'></textarea>
-                        </div>
+                                <div class="form-group">
+                                    <label for="productSku">SKU</label>
+                                    <input type="text" id="productSku" name="sku" placeholder="CAT6-305M" required>
+                                </div>
 
-                        <div class="form-group">
-                            <label for="productSpecifications">Especificaciones (JSON)</label>
-                            <textarea id="productSpecifications" name="specifications" placeholder='Ejemplo: {"material": "Cobre", "frecuencia": "500 MHz"}'></textarea>
-                        </div>
+                                <div class="form-group">
+                                    <label for="productPrice">Precio</label>
+                                    <input type="number" id="productPrice" name="price" min="0" step="0.01" placeholder="2500.00" required>
+                                </div>
 
-                        <div class="form-group">
-                            <label for="productFeatures">Características</label>
-                            <textarea id="productFeatures" name="features" placeholder="Una característica por línea"></textarea>
-                        </div>
+                                <div class="form-group">
+                                    <label for="productCategory">Categoría</label>
+                                    <select id="productCategory" name="category_id" required>
+                                        <option value="">Selecciona una categoría</option>
+                                    </select>
+                                </div>
 
-                        <div class="form-group">
-                            <label for="productTags">Tags</label>
-                            <input type="text" id="productTags" name="tags" placeholder="cat6, cable, redes">
-                        </div>
+                                <div class="form-group">
+                                    <label for="productStock">Stock inicial</label>
+                                    <input type="number" id="productStock" name="stock" min="0" step="1" value="0">
+                                </div>
 
-                        <div class="form-group" style="grid-column: 1 / -1;">
-                            <label for="productDescription">Descripción</label>
-                            <textarea id="productDescription" name="description" placeholder="Detalles técnicos, usos recomendados..."></textarea>
-                        </div>
+                                <div class="form-group">
+                                    <label for="productMinStock">Stock mínimo</label>
+                                    <input type="number" id="productMinStock" name="min_stock" min="0" step="1" value="5">
+                                </div>
 
-                        <div class="form-group form-check">
-                            <input type="checkbox" id="productFeatured" name="is_featured">
-                            <label for="productFeatured">Marcar como producto destacado</label>
-                        </div>
+                                <div class="form-group">
+                                    <label for="productBrand">Marca</label>
+                                    <input type="text" id="productBrand" name="brand" placeholder="NetTech">
+                                </div>
 
-                        <div class="admin-form-actions">
-                            <button type="button" class="btn btn-outline hidden" id="cancelEditBtn">
-                                Cancelar edición
-                            </button>
-                            <button type="reset" class="btn btn-outline" id="resetProductFormBtn">
-                                Limpiar
-                            </button>
-                            <button type="submit" class="btn btn-primary" id="submitProductBtn">
-                                <i class="fas fa-plus-circle"></i>
-                                Crear producto
-                            </button>
+                                <div class="form-group" style="grid-column: 1 / -1;">
+                                    <label>Imagen del producto</label>
+                                    <div id="productImageDropzone" class="image-dropzone" data-admin-display="block">
+                                        <input type="file" id="productImageInput" class="image-dropzone-input" accept="image/*">
+                                        <div class="image-dropzone-content" id="productImageContent">
+                                            <i class="fas fa-cloud-upload-alt"></i>
+                                            <p>Arrastra y suelta la imagen aquí o haz clic para seleccionar</p>
+                                            <span class="image-dropzone-hint">Formatos soportados: JPG, PNG, GIF (máx. 2 MB)</span>
+                                        </div>
+                                        <div class="image-dropzone-preview hidden" id="productImagePreview">
+                                            <img alt="Previsualización" id="productImagePreviewImg">
+                                            <button type="button" class="btn btn-outline btn-sm" id="productImageRemoveBtn">
+                                                <i class="fas fa-times"></i> Quitar imagen
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="productWeight">Peso</label>
+                                    <input type="text" id="productWeight" name="weight" placeholder="1.2 kg">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="productDimensions">Dimensiones</label>
+                                    <textarea id="productDimensions" name="dimensions" placeholder='Ejemplo: {"length": "30 cm", "width": "20 cm", "height": "10 cm"}'></textarea>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="productSpecifications">Especificaciones (JSON)</label>
+                                    <textarea id="productSpecifications" name="specifications" placeholder='Ejemplo: {"material": "Cobre", "frecuencia": "500 MHz"}'></textarea>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="productFeatures">Características</label>
+                                    <textarea id="productFeatures" name="features" placeholder="Una característica por línea"></textarea>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="productTags">Tags</label>
+                                    <input type="text" id="productTags" name="tags" placeholder="cat6, cable, redes">
+                                </div>
+
+                                <div class="form-group" style="grid-column: 1 / -1;">
+                                    <label for="productDescription">Descripción</label>
+                                    <textarea id="productDescription" name="description" placeholder="Detalles técnicos, usos recomendados..."></textarea>
+                                </div>
+
+                                <div class="form-group form-check">
+                                    <input type="checkbox" id="productFeatured" name="is_featured">
+                                    <label for="productFeatured">Marcar como producto destacado</label>
+                                </div>
+
+                                <div class="admin-form-actions">
+                                    <button type="button" class="btn btn-outline hidden" id="cancelEditBtn">
+                                        Cancelar edición
+                                    </button>
+                                    <button type="reset" class="btn btn-outline" id="resetProductFormBtn">
+                                        Limpiar
+                                    </button>
+                                    <button type="submit" class="btn btn-primary" id="submitProductBtn">
+                                        <i class="fas fa-plus-circle"></i>
+                                        Crear producto
+                                    </button>
+                                </div>
+                            </form>
                         </div>
-                    </form>
+                    </div>
                 </section>
             </div>
         </div>

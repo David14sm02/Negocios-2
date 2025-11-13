@@ -135,8 +135,12 @@ class ApiClient {
         return this.get('/products/featured/list', { limit });
     }
 
-    async getCategories() {
-        return this.get('/products/categories/list');
+    async getCategories(params = {}) {
+        return this.get('/products/categories/list', params);
+    }
+
+    async getAllCategories() {
+        return this.get('/products/categories/manage');
     }
 
     async createProduct(productData) {
@@ -156,6 +160,18 @@ class ApiClient {
 
     async deleteProduct(id) {
         return this.delete(`/products/${id}`);
+    }
+
+    async createCategory(categoryData) {
+        return this.post('/products/categories', categoryData);
+    }
+
+    async updateCategory(id, categoryData) {
+        return this.put(`/products/categories/${id}`, categoryData);
+    }
+
+    async deleteCategory(id) {
+        return this.delete(`/products/categories/${id}`);
     }
 
     // ===== CARRITO =====

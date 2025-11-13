@@ -8,6 +8,10 @@ class AdminProductsPage {
         this.editingProductId = null;
         this.editingProduct = null;
         this.categories = [];
+        this.editingCategoryId = null;
+        this.editingCategory = null;
+        this.isLoadingCategories = false;
+        this.currentSection = 'categories';
         this.pagination = {
             page: 1,
             limit: 10,
@@ -30,9 +34,44 @@ class AdminProductsPage {
 
         this.cacheElements();
         this.bindEvents();
+        this.showSection(this.currentSection);
 
         await this.loadCategories();
         await this.loadProducts();
+    }
+
+    escapeHtml(value) {
+        if (value === undefined || value === null) return '';
+        return String(value).replace(/[&<>"']/g, (match) => {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return map[match] || match;
+        });
+    }
+
+    showSection(section) {
+        if (!section) return;
+        this.currentSection = section;
+
+        if (this.elements.sectionPanels && this.elements.sectionPanels.length > 0) {
+            this.elements.sectionPanels.forEach((panel) => {
+                const isTarget = panel.dataset.adminSection === section;
+                panel.classList.toggle('hidden', !isTarget);
+            });
+        }
+
+        if (this.elements.sectionToggleButtons && this.elements.sectionToggleButtons.length > 0) {
+            this.elements.sectionToggleButtons.forEach((button) => {
+                const isTarget = button.dataset.sectionTarget === section;
+                button.classList.toggle('btn-primary', isTarget);
+                button.classList.toggle('btn-outline', !isTarget);
+            });
+        }
     }
 
     cacheElements() {
@@ -41,6 +80,19 @@ class AdminProductsPage {
         this.elements.refreshBtn = document.getElementById('refreshProductsBtn');
         this.elements.prevPageBtn = document.getElementById('prevPageBtn');
         this.elements.nextPageBtn = document.getElementById('nextPageBtn');
+        this.elements.categoriesTableBody = document.getElementById('categoriesTableBody');
+        this.elements.refreshCategoriesBtn = document.getElementById('refreshCategoriesBtn');
+        this.elements.categoryForm = document.getElementById('categoryForm');
+        this.elements.categoryNameInput = document.getElementById('categoryName');
+        this.elements.categoryDescriptionInput = document.getElementById('categoryDescription');
+        this.elements.categoryParentSelect = document.getElementById('categoryParent');
+        this.elements.categoryImageInput = document.getElementById('categoryImageUrl');
+        this.elements.categoryIsActiveCheckbox = document.getElementById('categoryIsActive');
+        this.elements.categorySubmitBtn = document.getElementById('categorySubmitBtn');
+        this.elements.categoryResetBtn = document.getElementById('categoryResetBtn');
+        this.elements.categoryCancelEditBtn = document.getElementById('categoryCancelEditBtn');
+        this.elements.sectionToggleButtons = Array.from(document.querySelectorAll('[data-section-target]'));
+        this.elements.sectionPanels = Array.from(document.querySelectorAll('[data-admin-section]'));
         this.elements.createProductForm = document.getElementById('createProductForm');
         this.elements.submitProductBtn = document.getElementById('submitProductBtn');
         this.elements.resetProductFormBtn = document.getElementById('resetProductFormBtn');
@@ -57,6 +109,63 @@ class AdminProductsPage {
     }
 
     bindEvents() {
+        if (this.elements.sectionToggleButtons && this.elements.sectionToggleButtons.length > 0) {
+            this.elements.sectionToggleButtons.forEach((button) => {
+                button.addEventListener('click', () => {
+                    const target = button.dataset.sectionTarget;
+                    if (target) {
+                        this.showSection(target);
+                    }
+                });
+            });
+        }
+
+        this.elements.refreshCategoriesBtn?.addEventListener('click', () => {
+            this.loadCategories(true);
+        });
+
+        this.elements.categoryForm?.addEventListener('submit', (event) => {
+            event.preventDefault();
+            this.handleCategorySubmit();
+        });
+
+        this.elements.categoryForm?.addEventListener('reset', () => {
+            // Permitir que el formulario limpie los inputs antes de restaurar valores por defecto
+            setTimeout(() => this.resetCategoryForm(), 0);
+        });
+
+        this.elements.categoryCancelEditBtn?.addEventListener('click', () => {
+            this.exitCategoryEditMode();
+        });
+
+        this.elements.categoriesTableBody?.addEventListener('click', (event) => {
+            const editButton = event.target.closest('[data-action="edit-category"]');
+            if (editButton) {
+                const categoryId = Number(editButton.dataset.categoryId);
+                if (!categoryId) {
+                    Utils.showToast('Categoría inválida.', 'error');
+                    return;
+                }
+                const category = this.categories.find(item => item.id === categoryId);
+                if (!category) {
+                    Utils.showToast('No se encontró la categoría seleccionada.', 'error');
+                    return;
+                }
+                this.enterCategoryEditMode(category);
+                return;
+            }
+
+            const deleteButton = event.target.closest('[data-action="delete-category"]');
+            if (deleteButton) {
+                const categoryId = Number(deleteButton.dataset.categoryId);
+                if (!categoryId) {
+                    Utils.showToast('Categoría inválida.', 'error');
+                    return;
+                }
+                this.handleCategoryDelete(categoryId);
+            }
+        });
+
         this.elements.refreshBtn?.addEventListener('click', () => {
             this.loadProducts(true);
         });
@@ -182,38 +291,295 @@ class AdminProductsPage {
         });
     }
 
-    async loadCategories() {
-        if (!this.elements.productCategorySelect) {
-            return;
+    async loadCategories(fromRefresh = false) {
+        if (this.isLoadingCategories) return;
+        this.isLoadingCategories = true;
+
+        if (this.elements.categorySubmitBtn) {
+            this.elements.categorySubmitBtn.disabled = true;
+        }
+        if (this.elements.refreshCategoriesBtn) {
+            this.elements.refreshCategoriesBtn.disabled = true;
         }
 
+        this.setCategoriesTableLoading(true, fromRefresh);
+
         try {
-            this.elements.productCategorySelect.disabled = true;
-            const response = await this.apiClient.getCategories();
+            const response = await this.apiClient.getAllCategories();
             this.categories = Array.isArray(response.data) ? response.data : response.data?.categories || [];
+            this.renderCategoriesTable();
             this.renderCategoryOptions();
+            this.populateCategoryParentSelect();
         } catch (error) {
             console.error('Error al cargar categorías:', error);
+            this.renderCategoriesError(error?.message || 'No se pudo cargar el listado de categorías.');
             Utils.showToast('No se pudieron cargar las categorías.', 'warning');
         } finally {
-            this.elements.productCategorySelect.disabled = false;
+            this.isLoadingCategories = false;
+            this.setCategoriesTableLoading(false);
+            if (this.elements.categorySubmitBtn) {
+                this.elements.categorySubmitBtn.disabled = false;
+            }
+            if (this.elements.refreshCategoriesBtn) {
+                this.elements.refreshCategoriesBtn.disabled = false;
+            }
         }
     }
+
 
     renderCategoryOptions() {
         if (!this.elements.productCategorySelect) return;
 
+        const activeCategories = this.categories.filter(category => category.is_active);
         const options = ['<option value="">Selecciona una categoría</option>'];
 
-        if (this.categories.length === 0) {
+        if (activeCategories.length === 0) {
             options.push('<option value="" disabled>No hay categorías disponibles</option>');
+            this.elements.productCategorySelect.disabled = true;
         } else {
-            this.categories.forEach((category) => {
+            activeCategories.forEach((category) => {
                 options.push(`<option value="${category.id}">${category.name}</option>`);
             });
+            this.elements.productCategorySelect.disabled = false;
         }
 
         this.elements.productCategorySelect.innerHTML = options.join('');
+    }
+
+    setCategoriesTableLoading(isLoading, fromRefresh = false) {
+        if (!this.elements.categoriesTableBody) return;
+
+        if (isLoading) {
+            const message = fromRefresh ? 'Actualizando categorías...' : 'Cargando categorías...';
+            this.elements.categoriesTableBody.innerHTML = `
+                <tr>
+                    <td class="table-empty" colspan="5">
+                        <i class="fas fa-spinner fa-spin"></i> ${message}
+                    </td>
+                </tr>
+            `;
+        }
+    }
+
+    renderCategoriesTable() {
+        if (!this.elements.categoriesTableBody) return;
+
+        if (this.categories.length === 0) {
+            this.elements.categoriesTableBody.innerHTML = `
+                <tr>
+                    <td class="table-empty" colspan="5">
+                        No hay categorías registradas. Crea una nueva para comenzar.
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        const rows = this.categories.map((category) => {
+            const activeBadge = category.is_active
+                ? '<span class="status-badge active"><i class="fas fa-check-circle"></i> Activa</span>'
+                : '<span class="status-badge inactive"><i class="fas fa-ban"></i> Inactiva</span>';
+
+            return `
+                <tr data-category-id="${category.id}">
+                    <td>
+                        <div class="table-product">
+                            <strong>${this.escapeHtml(category.name)}</strong>
+                            <div class="table-product-meta">
+                                ID: ${category.id}${category.parent_name ? ` · Padre: ${this.escapeHtml(category.parent_name)}` : ''}
+                            </div>
+                        </div>
+                    </td>
+                    <td>${category.description ? this.escapeHtml(category.description) : '—'}</td>
+                    <td>${category.active_product_count ?? 0}</td>
+                    <td>${activeBadge}</td>
+                    <td>
+                        <div class="table-actions">
+                            <button
+                                type="button"
+                                class="btn btn-outline btn-sm"
+                                data-action="edit-category"
+                                data-category-id="${category.id}"
+                            >
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                            <button
+                                type="button"
+                                class="btn btn-outline btn-sm"
+                                data-action="delete-category"
+                                data-category-id="${category.id}"
+                            >
+                                <i class="fas fa-archive"></i> Desactivar
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+
+        this.elements.categoriesTableBody.innerHTML = rows;
+    }
+
+    renderCategoriesError(message) {
+        if (!this.elements.categoriesTableBody) return;
+        this.elements.categoriesTableBody.innerHTML = `
+            <tr>
+                <td class="table-empty" colspan="5">${message}</td>
+            </tr>
+        `;
+    }
+
+    populateCategoryParentSelect(excludeId = null) {
+        if (!this.elements.categoryParentSelect) return;
+
+        const options = ['<option value="">Sin categoría padre</option>'];
+
+        this.categories
+            .filter(category => category.id !== excludeId)
+            .forEach(category => {
+                const disabled = !category.is_active ? 'disabled' : '';
+                options.push(`<option value="${category.id}" ${disabled}>${category.name}</option>`);
+            });
+
+        this.elements.categoryParentSelect.innerHTML = options.join('');
+    }
+
+    resetCategoryForm() {
+        if (!this.elements.categoryForm) return;
+
+        this.elements.categoryNameInput.value = '';
+        this.elements.categoryDescriptionInput.value = '';
+        this.elements.categoryImageInput.value = '';
+        this.elements.categoryIsActiveCheckbox.checked = true;
+        this.exitCategoryEditMode();
+    }
+
+    setCategoryFormLoading(isLoading) {
+        if (this.elements.categorySubmitBtn) {
+            this.elements.categorySubmitBtn.disabled = isLoading;
+        }
+        if (this.elements.refreshCategoriesBtn) {
+            this.elements.refreshCategoriesBtn.disabled = isLoading;
+        }
+    }
+
+    async handleCategorySubmit() {
+        if (!this.elements.categoryForm || !this.apiClient) return;
+
+        const formData = new FormData(this.elements.categoryForm);
+        const name = formData.get('name')?.toString().trim();
+        const description = formData.get('description')?.toString().trim();
+        const parentIdValue = formData.get('parent_id')?.toString().trim();
+        const imageUrl = formData.get('image_url')?.toString().trim();
+
+        const payload = {
+            name,
+            description: description ? description : null,
+            parent_id: parentIdValue ? parentIdValue : null,
+            image_url: imageUrl ? imageUrl : null,
+            is_active: this.elements.categoryIsActiveCheckbox?.checked ?? true
+        };
+
+        if (!payload.name) {
+            Utils.showToast('El nombre de la categoría es obligatorio.', 'warning');
+            return;
+        }
+
+        this.setCategoryFormLoading(true);
+
+        try {
+            if (this.editingCategoryId) {
+                await this.apiClient.updateCategory(this.editingCategoryId, payload);
+                Utils.showToast('Categoría actualizada correctamente.', 'success');
+            } else {
+                await this.apiClient.createCategory(payload);
+                Utils.showToast('Categoría creada correctamente.', 'success');
+            }
+
+            await this.loadCategories(true);
+            this.elements.categoryForm.reset();
+        } catch (error) {
+            console.error('Error al guardar categoría:', error);
+            Utils.showToast(error?.message || 'No se pudo guardar la categoría.', 'error');
+        } finally {
+            this.setCategoryFormLoading(false);
+        }
+    }
+
+    enterCategoryEditMode(category) {
+        if (!category || !this.elements.categoryForm) return;
+
+        this.showSection('categories');
+
+        this.editingCategoryId = category.id;
+        this.editingCategory = category;
+
+        this.elements.categoryNameInput.value = category.name || '';
+        this.elements.categoryDescriptionInput.value = category.description || '';
+        this.elements.categoryImageInput.value = category.image_url || '';
+        this.elements.categoryIsActiveCheckbox.checked = category.is_active === true;
+
+        this.populateCategoryParentSelect(category.id);
+        if (this.elements.categoryParentSelect) {
+            this.elements.categoryParentSelect.value = category.parent_id || '';
+        }
+
+        if (this.elements.categorySubmitBtn) {
+            this.elements.categorySubmitBtn.innerHTML = '<i class="fas fa-save"></i> Actualizar categoría';
+        }
+        if (this.elements.categoryCancelEditBtn) {
+            this.elements.categoryCancelEditBtn.classList.remove('hidden');
+        }
+    }
+
+    exitCategoryEditMode() {
+        this.editingCategoryId = null;
+        this.editingCategory = null;
+
+        if (this.elements.categorySubmitBtn) {
+            this.elements.categorySubmitBtn.innerHTML = '<i class="fas fa-folder-plus"></i> Crear categoría';
+        }
+        if (this.elements.categoryCancelEditBtn) {
+            this.elements.categoryCancelEditBtn.classList.add('hidden');
+        }
+
+        this.populateCategoryParentSelect();
+    }
+
+    async handleCategoryDelete(categoryId) {
+        if (!this.apiClient) return;
+
+        const category = this.categories.find(item => item.id === categoryId);
+        if (!category) {
+            Utils.showToast('La categoría seleccionada no existe.', 'error');
+            return;
+        }
+
+        const confirmDelete = window.confirm(
+            `¿Seguro que deseas desactivar la categoría "${category.name}"? Los productos asociados permanecerán visibles, pero ya no podrán seleccionarse en nuevas altas.`
+        );
+
+        if (!confirmDelete) {
+            return;
+        }
+
+        this.setCategoryFormLoading(true);
+
+        try {
+            await this.apiClient.deleteCategory(categoryId);
+            Utils.showToast('Categoría desactivada correctamente.', 'success');
+            await this.loadCategories(true);
+
+            if (this.editingCategoryId === categoryId) {
+                this.exitCategoryEditMode();
+                this.elements.categoryForm?.reset();
+            }
+        } catch (error) {
+            console.error('Error al desactivar categoría:', error);
+            Utils.showToast(error?.message || 'No se pudo desactivar la categoría.', 'error');
+        } finally {
+            this.setCategoryFormLoading(false);
+        }
     }
 
     async loadProducts(fromRefresh = false) {
@@ -698,6 +1064,8 @@ class AdminProductsPage {
     }
 
     enterEditMode(product) {
+        this.showSection('products');
+
         this.editingProductId = product.id;
         this.editingProduct = product;
         this.originalImageData = product.image_url || null;
