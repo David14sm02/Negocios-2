@@ -1,6 +1,6 @@
 const express = require('express');
 const db = require('../config/database');
-const { validateProduct, validateId, validateSearch } = require('../middleware/validation');
+const { validateProduct, validateCategory, validateId, validateSearch } = require('../middleware/validation');
 const { authenticateToken, requireAdmin, optionalAuth } = require('../middleware/auth');
 const dolibarrService = require('../services/dolibarrService');
 
@@ -65,6 +65,53 @@ const parseInteger = (value, defaultValue = 0) => {
     if (value === undefined || value === null || value === '') return defaultValue;
     const num = Number(value);
     return Number.isInteger(num) && num >= 0 ? num : defaultValue;
+};
+
+const parseParentCategoryId = (value) => {
+    if (value === undefined || value === null || value === '') {
+        return null;
+    }
+    const parsed = Number(value);
+    return Number.isInteger(parsed) && parsed >= 1 ? parsed : null;
+};
+
+const parseBoolean = (value, defaultValue = true) => {
+    if (value === undefined || value === null || value === '') {
+        return defaultValue;
+    }
+    if (typeof value === 'boolean') {
+        return value;
+    }
+    if (typeof value === 'string') {
+        const normalized = value.trim().toLowerCase();
+        if (['true', '1', 'yes', 'on'].includes(normalized)) return true;
+        if (['false', '0', 'no', 'off'].includes(normalized)) return false;
+    }
+    return defaultValue;
+};
+
+const getCategoryWithStats = async (id) => {
+    const result = await db.query(`
+        SELECT 
+            c.id,
+            c.name,
+            c.description,
+            c.parent_id,
+            parent.name AS parent_name,
+            c.image_url,
+            c.is_active,
+            c.created_at,
+            c.updated_at,
+            COUNT(p.id) FILTER (WHERE p.is_active = true) AS active_product_count,
+            COUNT(p.id) AS total_product_count
+        FROM categories c
+        LEFT JOIN categories parent ON c.parent_id = parent.id
+        LEFT JOIN products p ON c.id = p.category_id
+        WHERE c.id = $1
+        GROUP BY c.id, parent.name
+    `, [id]);
+
+    return result.rows[0] || null;
 };
 
 // GET /api/products - Obtener todos los productos con filtros
@@ -640,6 +687,181 @@ router.delete('/:id', authenticateToken, requireAdmin, validateId, async (req, r
         res.json({
             success: true,
             message: 'Producto eliminado exitosamente'
+        });
+    } catch (error) {
+        next(error);
+    }
+});
+
+// GET /api/products/categories/manage - Obtener todas las categorías (incluye inactivas)
+router.get('/categories/manage', authenticateToken, requireAdmin, async (req, res, next) => {
+    try {
+        const result = await db.query(`
+            SELECT 
+                c.id,
+                c.name,
+                c.description,
+                c.parent_id,
+                parent.name AS parent_name,
+                c.image_url,
+                c.is_active,
+                c.created_at,
+                c.updated_at,
+                COUNT(p.id) FILTER (WHERE p.is_active = true) AS active_product_count,
+                COUNT(p.id) AS total_product_count
+            FROM categories c
+            LEFT JOIN categories parent ON c.parent_id = parent.id
+            LEFT JOIN products p ON c.id = p.category_id
+            GROUP BY c.id, parent.name
+            ORDER BY c.name
+        `);
+
+        res.json({
+            success: true,
+            data: result.rows
+        });
+    } catch (error) {
+        next(error);
+    }
+});
+
+// POST /api/products/categories - Crear nueva categoría
+router.post('/categories', authenticateToken, requireAdmin, validateCategory, async (req, res, next) => {
+    try {
+        const { name, description, parent_id, image_url, is_active } = req.body;
+
+        const trimmedName = name.trim();
+        const trimmedDescription = description ? description.trim() : null;
+        const parentId = parseParentCategoryId(parent_id);
+        const sanitizedImage = typeof image_url === 'string' && image_url.trim().length > 0 ? image_url.trim() : null;
+        const activeValue = parseBoolean(is_active, true);
+
+        if (parentId) {
+            const parentCategory = await db.query('SELECT id FROM categories WHERE id = $1', [parentId]);
+            if (parentCategory.rows.length === 0) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'La categoría padre especificada no existe'
+                });
+            }
+        }
+
+        const insertResult = await db.query(`
+            INSERT INTO categories (name, description, parent_id, image_url, is_active)
+            VALUES ($1, $2, $3, $4, $5)
+            RETURNING id
+        `, [trimmedName, trimmedDescription, parentId, sanitizedImage, activeValue]);
+
+        const category = await getCategoryWithStats(insertResult.rows[0].id);
+
+        res.status(201).json({
+            success: true,
+            data: category,
+            message: 'Categoría creada exitosamente'
+        });
+    } catch (error) {
+        if (error.code === '23505') {
+            return res.status(409).json({
+                success: false,
+                error: 'Ya existe una categoría con ese nombre'
+            });
+        }
+        next(error);
+    }
+});
+
+// PUT /api/products/categories/:id - Actualizar categoría existente
+router.put('/categories/:id', authenticateToken, requireAdmin, validateId, validateCategory, async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const { name, description, parent_id, image_url, is_active } = req.body;
+
+        const trimmedName = name.trim();
+        const trimmedDescription = description ? description.trim() : null;
+        const parentId = parseParentCategoryId(parent_id);
+        const sanitizedImage = typeof image_url === 'string' && image_url.trim().length > 0 ? image_url.trim() : null;
+        const activeValue = parseBoolean(is_active, true);
+
+        const existingCategory = await db.query('SELECT id FROM categories WHERE id = $1', [id]);
+        if (existingCategory.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                error: 'Categoría no encontrada'
+            });
+        }
+
+        if (parentId && Number(id) === parentId) {
+            return res.status(400).json({
+                success: false,
+                error: 'Una categoría no puede ser padre de sí misma'
+            });
+        }
+
+        if (parentId) {
+            const parentCategory = await db.query('SELECT id FROM categories WHERE id = $1', [parentId]);
+            if (parentCategory.rows.length === 0) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'La categoría padre especificada no existe'
+                });
+            }
+        }
+
+        await db.query(`
+            UPDATE categories
+            SET name = $1,
+                description = $2,
+                parent_id = $3,
+                image_url = $4,
+                is_active = $5,
+                updated_at = NOW()
+            WHERE id = $6
+        `, [trimmedName, trimmedDescription, parentId, sanitizedImage, activeValue, id]);
+
+        const category = await getCategoryWithStats(id);
+
+        res.json({
+            success: true,
+            data: category,
+            message: 'Categoría actualizada exitosamente'
+        });
+    } catch (error) {
+        if (error.code === '23505') {
+            return res.status(409).json({
+                success: false,
+                error: 'Ya existe una categoría con ese nombre'
+            });
+        }
+        next(error);
+    }
+});
+
+// DELETE /api/products/categories/:id - Desactivar categoría
+router.delete('/categories/:id', authenticateToken, requireAdmin, validateId, async (req, res, next) => {
+    try {
+        const { id } = req.params;
+
+        const existingCategory = await db.query('SELECT id FROM categories WHERE id = $1', [id]);
+        if (existingCategory.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                error: 'Categoría no encontrada'
+            });
+        }
+
+        await db.query(`
+            UPDATE categories
+            SET is_active = false,
+                updated_at = NOW()
+            WHERE id = $1
+        `, [id]);
+
+        const category = await getCategoryWithStats(id);
+
+        res.json({
+            success: true,
+            data: category,
+            message: 'Categoría desactivada exitosamente'
         });
     } catch (error) {
         next(error);

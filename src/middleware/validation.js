@@ -46,6 +46,46 @@ const validateProduct = [
     handleValidationErrors
 ];
 
+// Validaciones para categorías
+const validateCategory = [
+    body('name')
+        .exists({ checkFalsy: true })
+        .withMessage('El nombre es obligatorio')
+        .bail()
+        .trim()
+        .isLength({ min: 2, max: 100 })
+        .withMessage('El nombre debe tener entre 2 y 100 caracteres'),
+    body('description')
+        .optional({ checkFalsy: true })
+        .trim()
+        .isLength({ max: 500 })
+        .withMessage('La descripción no puede exceder 500 caracteres'),
+    body('parent_id')
+        .optional({ nullable: true })
+        .custom(value => {
+            if (value === '' || value === null || value === undefined) {
+                return true;
+            }
+            const parsed = Number(value);
+            if (!Number.isInteger(parsed) || parsed < 1) {
+                throw new Error('El ID de categoría padre es inválido');
+            }
+            return true;
+        }),
+    body('image_url')
+        .optional({ checkFalsy: true })
+        .trim()
+        .isLength({ max: 500 })
+        .withMessage('La URL de la imagen no puede exceder 500 caracteres'),
+    body('is_active')
+        .optional()
+        .isBoolean()
+        .withMessage('El estado activo debe ser un valor booleano')
+        .bail()
+        .toBoolean(),
+    handleValidationErrors
+];
+
 // Validaciones para usuarios
 const validateUser = [
     body('email')
@@ -163,6 +203,7 @@ const validateCheckoutSession = [
 
 module.exports = {
     validateProduct,
+    validateCategory,
     validateUser,
     validateOrder,
     validateId,

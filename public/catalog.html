@@ -97,9 +97,13 @@
 
             <div class="catalog-content">
                 <!-- Filters Sidebar -->
-                <aside class="catalog-filters">
-                    <div class="filter-section">
-                        <h3>Filtrar por Categoría</h3>
+                <aside class="catalog-filters filters-classic">
+                    <div class="filters-headline">
+                        <span class="filters-kicker">Explorar por</span>
+                        <h2 class="filters-title">Categorías</h2>
+                    </div>
+
+                    <div class="filter-section filter-section-categories">
                         <div class="filter-buttons">
                             <button class="filter-btn active" data-category="all">Todas</button>
                             <button class="filter-btn" data-category="cables">Cables</button>
@@ -109,25 +113,37 @@
                         </div>
                     </div>
 
-                    <div class="filter-section">
-                        <h3>Rango de Precio</h3>
-                        <div class="price-range">
-                            <input type="range" id="priceRange" min="0" max="5000" value="5000">
-                            <div class="price-labels">
-                                <span>$0</span>
-                                <span id="maxPrice">$5,000</span>
+                    <div class="filters-divider"></div>
+
+                    <div class="filter-section filter-collapse is-open">
+                        <button class="filter-toggle" type="button">
+                            <span>Precio</span>
+                            <span class="filter-toggle-icon" aria-hidden="true"></span>
+                        </button>
+                        <div class="filter-content">
+                            <div class="price-range">
+                                <input type="range" id="priceRange" min="0" max="5000" value="5000">
+                                <div class="price-labels">
+                                    <span>$0</span>
+                                    <span id="maxPrice">$5,000</span>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="filter-section">
-                        <h3>Ordenar por</h3>
-                        <select class="form-select" id="sortSelect">
-                            <option value="name">Nombre A-Z</option>
-                            <option value="price-low">Precio: Menor a Mayor</option>
-                            <option value="price-high">Precio: Mayor a Menor</option>
-                            <option value="newest">Más Recientes</option>
-                        </select>
+                    <div class="filter-section filter-collapse is-open">
+                        <button class="filter-toggle" type="button">
+                            <span>Ordenar por</span>
+                            <span class="filter-toggle-icon" aria-hidden="true"></span>
+                        </button>
+                        <div class="filter-content">
+                            <select class="form-select" id="sortSelect">
+                                <option value="name">Nombre A-Z</option>
+                                <option value="price-low">Precio: Menor a Mayor</option>
+                                <option value="price-high">Precio: Mayor a Menor</option>
+                                <option value="newest">Más Recientes</option>
+                            </select>
+                        </div>
                     </div>
                 </aside>
 
