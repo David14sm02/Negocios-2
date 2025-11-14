@@ -19,11 +19,5 @@
       "src": "/(.*)",
       "dest": "/api/index.js"
     }
-  ],
-  "crons": [
-    {
-      "path": "/api/cron/sync-dolibarr",
-      "schedule": "*/15 * * * *"
-    }
   ]
 }
