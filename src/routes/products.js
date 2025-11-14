@@ -435,9 +435,21 @@ router.post('/', authenticateToken, requireAdmin, validateProduct, async (req, r
 
         // Sincronizar con Dolibarr automáticamente (sin bloquear la respuesta)
         if (process.env.DOLIBARR_URL && process.env.DOLIBARR_AUTO_SYNC !== 'false') {
-            dolibarrService.syncProduct(product).catch(error => {
-                console.error('⚠️ Error sincronizando producto con Dolibarr (no crítico):', error.message);
-            });
+            console.log(`🔄 [AUTO-SYNC] Iniciando sincronización automática: ${product.name} (SKU: ${product.sku})`);
+            dolibarrService.syncProduct(product, db)
+                .then(result => {
+                    if (result && result.dolibarr_id) {
+                        console.log(`✅ [AUTO-SYNC] Producto sincronizado: ${product.name} → Dolibarr ID: ${result.dolibarr_id}`);
+                    } else {
+                        console.warn(`⚠️ [AUTO-SYNC] Sincronización sin dolibarr_id: ${product.name}`);
+                    }
+                })
+                .catch(error => {
+                    console.error(`❌ [AUTO-SYNC] Error sincronizando ${product.name}:`, error.message);
+                    if (error.stack) console.error('   Stack:', error.stack);
+                });
+        } else {
+            console.log(`⏭️ [AUTO-SYNC] Deshabilitado para: ${product.name}`);
         }
 
         res.status(201).json({
@@ -549,9 +561,16 @@ router.put('/:id', authenticateToken, requireAdmin, validateId, validateProduct,
 
         // Sincronizar con Dolibarr automáticamente (sin bloquear la respuesta)
         if (process.env.DOLIBARR_URL && process.env.DOLIBARR_AUTO_SYNC !== 'false') {
-            dolibarrService.syncProduct(product).catch(error => {
-                console.error('⚠️ Error sincronizando producto con Dolibarr (no crítico):', error.message);
-            });
+            console.log(`🔄 [AUTO-SYNC] Actualizando producto en Dolibarr: ${product.name} (SKU: ${product.sku})`);
+            dolibarrService.syncProduct(product, db)
+                .then(result => {
+                    if (result && result.dolibarr_id) {
+                        console.log(`✅ [AUTO-SYNC] Producto actualizado: ${product.name} → Dolibarr ID: ${result.dolibarr_id}`);
+                    }
+                })
+                .catch(error => {
+                    console.error(`❌ [AUTO-SYNC] Error actualizando ${product.name}:`, error.message);
+                });
         }
 
         res.json({
@@ -641,9 +660,16 @@ router.patch('/:id/stock', authenticateToken, requireAdmin, validateId, async (r
             `, [id]).then(fullProductResult => {
                 const fullProduct = fullProductResult.rows[0];
                 if (fullProduct) {
-                    dolibarrService.syncProduct(fullProduct).catch(error => {
-                        console.error('⚠️ Error sincronizando stock con Dolibarr (no crítico):', error.message);
-                    });
+                    console.log(`🔄 [AUTO-SYNC] Sincronizando stock actualizado: ${fullProduct.name} (SKU: ${fullProduct.sku})`);
+                    dolibarrService.syncProduct(fullProduct, db)
+                        .then(result => {
+                            if (result && result.dolibarr_id) {
+                                console.log(`✅ [AUTO-SYNC] Stock sincronizado: ${fullProduct.name} → Dolibarr ID: ${result.dolibarr_id}`);
+                            }
+                        })
+                        .catch(error => {
+                            console.error(`❌ [AUTO-SYNC] Error sincronizando stock de ${fullProduct.name}:`, error.message);
+                        });
                 }
             }).catch(syncQueryError => {
                 console.error('⚠️ Error obteniendo producto para sincronización:', syncQueryError.message);

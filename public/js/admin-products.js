@@ -231,6 +231,17 @@ class AdminProductsPage {
                 }
 
                 this.enterEditMode(product);
+                return;
+            }
+
+            const deleteButton = event.target.closest('[data-action="delete-product"]');
+            if (deleteButton) {
+                const productId = Number(deleteButton.dataset.productId);
+                if (!productId) {
+                    Utils.showToast('Producto inválido.', 'error');
+                    return;
+                }
+                this.handleProductDelete(productId);
             }
         });
 
@@ -409,7 +420,7 @@ class AdminProductsPage {
                                 data-action="delete-category"
                                 data-category-id="${category.id}"
                             >
-                                <i class="fas fa-archive"></i> Desactivar
+                                <i class="fas fa-trash"></i> Eliminar
                             </button>
                         </div>
                     </td>
@@ -556,7 +567,7 @@ class AdminProductsPage {
         }
 
         const confirmDelete = window.confirm(
-            `¿Seguro que deseas desactivar la categoría "${category.name}"? Los productos asociados permanecerán visibles, pero ya no podrán seleccionarse en nuevas altas.`
+            `¿Seguro que deseas eliminar la categoría "${category.name}"? Esta acción marcará la categoría como inactiva. Los productos asociados permanecerán visibles, pero ya no podrán seleccionarse en nuevas altas.`
         );
 
         if (!confirmDelete) {
@@ -567,7 +578,7 @@ class AdminProductsPage {
 
         try {
             await this.apiClient.deleteCategory(categoryId);
-            Utils.showToast('Categoría desactivada correctamente.', 'success');
+            Utils.showToast('Categoría eliminada correctamente.', 'success');
             await this.loadCategories(true);
 
             if (this.editingCategoryId === categoryId) {
@@ -575,8 +586,8 @@ class AdminProductsPage {
                 this.elements.categoryForm?.reset();
             }
         } catch (error) {
-            console.error('Error al desactivar categoría:', error);
-            Utils.showToast(error?.message || 'No se pudo desactivar la categoría.', 'error');
+            console.error('Error al eliminar categoría:', error);
+            Utils.showToast(error?.message || 'No se pudo eliminar la categoría.', 'error');
         } finally {
             this.setCategoryFormLoading(false);
         }
@@ -716,6 +727,14 @@ class AdminProductsPage {
                                 data-product-id="${product.id}"
                             >
                                 <i class="fas fa-edit"></i> Editar
+                            </button>
+                            <button 
+                                type="button" 
+                                class="btn btn-outline btn-sm" 
+                                data-action="delete-product"
+                                data-product-id="${product.id}"
+                            >
+                                <i class="fas fa-trash"></i> Eliminar
                             </button>
                         </div>
                     </td>
@@ -941,6 +960,55 @@ class AdminProductsPage {
             Utils.showToast(error.message || 'No se pudo actualizar el stock.', 'error');
         } finally {
             this.setButtonLoading(button, false);
+        }
+    }
+
+    async handleProductDelete(productId) {
+        if (!this.apiClient) return;
+
+        const product = this.products.find(item => item.id === productId);
+        if (!product) {
+            Utils.showToast('El producto seleccionado no existe.', 'error');
+            return;
+        }
+
+        const confirmDelete = window.confirm(
+            `¿Seguro que deseas eliminar el producto "${product.name}"? Esta acción marcará el producto como inactivo.`
+        );
+
+        if (!confirmDelete) {
+            return;
+        }
+
+        // Deshabilitar botones mientras se procesa
+        const deleteButton = document.querySelector(`[data-action="delete-product"][data-product-id="${productId}"]`);
+        if (deleteButton) {
+            this.setButtonLoading(deleteButton, true, 'Eliminando...');
+        }
+
+        try {
+            await this.apiClient.deleteProduct(productId);
+            Utils.showToast('Producto eliminado correctamente.', 'success');
+            await this.loadProducts(true);
+
+            if (this.editingProductId === productId) {
+                this.exitEditMode();
+                this.elements.createProductForm?.reset();
+                if (this.elements.productStockInput) {
+                    this.elements.productStockInput.value = '0';
+                }
+                if (this.elements.productMinStockInput) {
+                    this.elements.productMinStockInput.value = '5';
+                }
+                this.resetImageDropzone();
+            }
+        } catch (error) {
+            console.error('Error al eliminar producto:', error);
+            Utils.showToast(error?.message || 'No se pudo eliminar el producto.', 'error');
+        } finally {
+            if (deleteButton) {
+                this.setButtonLoading(deleteButton, false);
+            }
         }
     }
 

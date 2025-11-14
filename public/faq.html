@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preguntas Frecuentes - NetTech Solutions</title>
+    <meta name="description" content="Encuentra respuestas a las preguntas más frecuentes sobre nuestros productos, envíos, pagos y más.">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/colors.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <!-- Logo -->
+                <div class="logo">
+                    <a href="index.html">
+                        <i class="fas fa-network-wired"></i>
+                        <span>NetTech Solutions</span>
+                    </a>
+                </div>
+                
+                <!-- Navigation -->
+                <nav class="nav">
+                    <ul class="nav-list">
+                        <li><a href="index.html" class="nav-link">Inicio</a></li>
+                        <li><a href="catalog.html" class="nav-link">Catálogo</a></li>
+                        <li><a href="blog.html" class="nav-link">Blog</a></li>
+                        <li><a href="about.html" class="nav-link">Acerca de</a></li>
+                        <li><a href="faq.html" class="nav-link active">FAQ</a></li>
+                    </ul>
+                </nav>
+                
+                <!-- Header Actions -->
+                <div class="header-actions">
+                    <div class="search-box">
+                        <input type="text" placeholder="Buscar productos..." id="searchInput">
+                        <button type="button" id="searchBtn">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="cart-icon" id="cartIcon">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="cart-count" id="cartCount">0</span>
+                    </div>
+
+                    <div class="user-profile" id="userProfile">
+                        <div class="user-profile-guest">
+                            <i class="fas fa-user-circle"></i>
+                            <div>
+                                <span class="user-status">Invitado</span>
+                                <div class="user-actions">
+                                    <a href="login.html">Iniciar Sesión</a>
+                                    <a href="register.html">Crear Cuenta</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button class="mobile-menu-btn" id="mobileMenuBtn">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Breadcrumbs -->
+    <div class="container">
+        <nav class="breadcrumbs">
+            <a href="index.html">Inicio</a>
+            <span class="separator">/</span>
+            <span class="current">Preguntas Frecuentes</span>
+        </nav>
+    </div>
+
+    <!-- FAQ Section -->
+    <section class="faq-section">
+        <div class="container">
+            <div class="faq-header">
+                <h1>Preguntas Frecuentes</h1>
+                <p>Encuentra respuestas rápidas a las preguntas más comunes sobre nuestros productos, servicios y políticas.</p>
+            </div>
+
+            <div class="faq-container">
+                <div class="faq-item">
+                    <div class="faq-question" data-faq="1">
+                        <h3>¿Cuáles son los métodos de pago disponibles?</h3>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Aceptamos pagos con tarjeta de crédito y débito a través de Stripe. También puedes contactarnos para otras opciones de pago como transferencia bancaria o pagos corporativos.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question" data-faq="2">
+                        <h3>¿Cuánto tiempo tarda el envío?</h3>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>El tiempo de envío depende de tu ubicación. Generalmente, los pedidos se procesan en 1-2 días hábiles y el envío tarda entre 3-7 días hábiles. Para envíos express, contáctanos para opciones más rápidas.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question" data-faq="3">
+                        <h3>¿Ofrecen envío gratuito?</h3>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Sí, ofrecemos envío gratuito para pedidos superiores a $100. Para pedidos menores, el costo de envío se calcula al momento del checkout según tu ubicación.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question" data-faq="4">
+                        <h3>¿Puedo cancelar o modificar mi pedido?</h3>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Puedes cancelar o modificar tu pedido antes de que sea procesado. Una vez procesado, contáctanos inmediatamente y haremos nuestro mejor esfuerzo para ayudarte. Los pedidos ya enviados no pueden cancelarse, pero puedes solicitar una devolución.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question" data-faq="5">
+                        <h3>¿Qué productos tienen en stock?</h3>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Puedes verificar el stock disponible en la página de cada producto. Si un producto está agotado, puedes contactarnos para conocer la fecha de reposición o recibir una notificación cuando esté disponible nuevamente.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question" data-faq="6">
+                        <h3>¿Ofrecen garantía en los productos?</h3>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Sí, todos nuestros productos tienen garantía del fabricante. La duración de la garantía varía según el producto (generalmente entre 1-3 años). Consulta los detalles en la página del producto o contáctanos para más información.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question" data-faq="7">
+                        <h3>¿Cómo puedo rastrear mi pedido?</h3>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Una vez que tu pedido sea enviado, recibirás un email con el número de seguimiento. También puedes ver el estado de tu pedido en la sección 'Mis Pedidos' si has iniciado sesión. Si no recibiste el email, contáctanos con tu número de pedido.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question" data-faq="8">
+                        <h3>¿Qué categorías de productos tienen?</h3>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Ofrecemos cables de red (Cat5e, Cat6, Cat6a, Cat7, fibra óptica), conectores (RJ45, conectores de fibra, patch panels), equipos de red (switches, routers, access points) y herramientas profesionales para instalación.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question" data-faq="9">
+                        <h3>¿Cómo puedo contactar con soporte?</h3>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Puedes contactarnos por email a <a href="mailto:info@nettechsolutions.com">info@nettechsolutions.com</a>, por teléfono al <a href="tel:+15551234567">+1 (555) 123-4567</a>, o usar el formulario de contacto en nuestra página 'Acerca de'. Nuestro horario de atención es de lunes a viernes de 9:00 AM a 6:00 PM.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question" data-faq="10">
+                        <h3>¿Necesito crear una cuenta para comprar?</h3>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>No es obligatorio, pero te recomendamos crear una cuenta para hacer un seguimiento más fácil de tus pedidos, acceder a ofertas exclusivas, guardar direcciones de envío y ver tu historial de compras.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question" data-faq="11">
+                        <h3>¿Qué hago si recibí un producto defectuoso?</h3>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Si recibiste un producto defectuoso, contáctanos inmediatamente (dentro de 48 horas) con fotos del producto y detalles del problema. Te ayudaremos con el proceso de reemplazo o reembolso según corresponda.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question" data-faq="12">
+                        <h3>¿Cuál es la política de devoluciones?</h3>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Aceptamos devoluciones dentro de los 30 días posteriores a la compra, siempre que el producto esté en su estado original, sin usar y con su empaque. Los costos de envío de devolución corren por cuenta del cliente, excepto en casos de productos defectuosos.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CTA Section -->
+            <div class="faq-cta">
+                <div class="faq-cta-content">
+                    <i class="fas fa-comments"></i>
+                    <h2>¿No encontraste tu respuesta?</h2>
+                    <p>Nuestro asistente virtual está disponible 24/7 para ayudarte. También puedes contactarnos directamente.</p>
+                    <div class="faq-cta-buttons">
+                        <button class="btn btn-primary" id="openChatbotBtn">
+                            <i class="fas fa-robot"></i> Hablar con Asistente
+                        </button>
+                        <a href="about.html#contact" class="btn btn-outline">
+                            <i class="fas fa-envelope"></i> Contactar Soporte
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <i class="fas fa-network-wired"></i>
+                        <span>NetTech Solutions</span>
+                    </div>
+                    <p>Especialistas en productos para instalaciones de redes profesionales.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Enlaces Rápidos</h4>
+                    <ul>
+                        <li><a href="catalog.html">Catálogo</a></li>
+                        <li><a href="blog.html">Blog</a></li>
+                        <li><a href="about.html">Acerca de</a></li>
+                        <li><a href="faq.html">FAQ</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Categorías</h4>
+                    <ul>
+                        <li><a href="catalog.html?category=cables">Cables de Red</a></li>
+                        <li><a href="catalog.html?category=conectores">Conectores</a></li>
+                        <li><a href="catalog.html?category=equipos">Equipos</a></li>
+                        <li><a href="catalog.html?category=herramientas">Herramientas</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Documentos Legales</h4>
+                    <ul>
+                        <li><a href="aviso-legal.html">Aviso Legal</a></li>
+                        <li><a href="politica-privacidad.html">Política de Privacidad</a></li>
+                        <li><a href="terminos-condiciones.html">Términos y Condiciones</a></li>
+                        <li><a href="politica-reembolsos.html">Política de Reembolsos</a></li>
+                        <li><a href="politica-envios.html">Política de Envíos</a></li>
+                        <li><a href="politica-precios-impuestos.html">Política de Precios</a></li>
+                        <li><a href="politica-facturacion.html">Política de Facturación</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Contacto</h4>
+                    <div class="contact-info">
+                        <p><i class="fas fa-phone"></i> +52 55 1234 5678</p>
+                        <p><i class="fas fa-envelope"></i> info@nettechsolutions.com</p>
+                        <p><i class="fas fa-map-marker-alt"></i> Ciudad de México, México</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2024 NetTech Solutions. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Cart Sidebar -->
+    <div class="cart-sidebar" id="cartSidebar">
+        <div class="cart-header">
+            <h3>Carrito de Compras</h3>
+            <button class="cart-close" id="cartClose">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="cart-content" id="cartContent">
+            <div class="cart-empty">
+                <i class="fas fa-shopping-cart"></i>
+                <p>Tu carrito está vacío</p>
+            </div>
+        </div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>Total: $<span id="cartTotal">0.00</span></span>
+            </div>
+            <button class="btn btn-primary cart-checkout" id="checkoutBtn" disabled>
+                Proceder al Pago
+            </button>
+        </div>
+    </div>
+
+    <!-- Cart Overlay -->
+    <div class="cart-overlay" id="cartOverlay"></div>
+
+    <!-- JavaScript -->
+    <script src="js/utils.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/chatbot.js"></script>
+    <script src="js/faq.js"></script>
+</body>
+</html>
+

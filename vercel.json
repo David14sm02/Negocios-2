@@ -2,14 +2,27 @@
   "version": 2,
   "builds": [
     {
-      "src": "api/index.js",
+      "src": "src/server.js",
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
+      "src": "/api/cron/sync-dolibarr",
+      "dest": "/api/cron/sync-dolibarr.js"
+    },
+    {
       "src": "/(.*)",
-      "dest": "/api/index.js"
+      "dest": "src/server.js"
     }
-  ]
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/sync-dolibarr",
+      "schedule": "*/15 * * * *"
+    }
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  }
 }

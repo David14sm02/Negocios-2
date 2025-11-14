@@ -164,6 +164,10 @@ async function startServer() {
         await db.testConnection();
         console.log('✅ Conexión a PostgreSQL establecida correctamente');
         
+        // Iniciar servicio de polling automático (si está habilitado)
+        const pollingService = require('./services/pollingService');
+        pollingService.iniciarPolling();
+        
         // Iniciar servidor
         app.listen(PORT, () => {
             console.log(`🚀 Servidor ejecutándose en puerto ${PORT}`);
@@ -203,4 +207,5 @@ if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
     startServer();
 }
 
+// Exportar app (necesario para Vercel)
 module.exports = app;
