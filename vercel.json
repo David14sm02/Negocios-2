@@ -2,7 +2,11 @@
   "version": 2,
   "builds": [
     {
-      "src": "src/server.js",
+      "src": "api/index.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/cron/sync-dolibarr.js",
       "use": "@vercel/node"
     }
   ],
@@ -13,7 +17,7 @@
     },
     {
       "src": "/(.*)",
-      "dest": "src/server.js"
+      "dest": "/api/index.js"
     }
   ],
   "crons": [
