@@ -2,22 +2,36 @@ const { Pool } = require('pg');
 
 class Database {
     constructor() {
-        this.pool = new Pool({
-            connectionString: process.env.DATABASE_URL,
-            ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
-            max: 20, // máximo de conexiones en el pool
-            idleTimeoutMillis: 30000, // cerrar conexiones inactivas después de 30 segundos
-            connectionTimeoutMillis: 10000, // timeout de conexión ampliado para entornos remotos
-        });
+        // Solo crear el pool si DATABASE_URL está disponible
+        if (process.env.DATABASE_URL) {
+            try {
+                this.pool = new Pool({
+                    connectionString: process.env.DATABASE_URL,
+                    ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
+                    max: 20, // máximo de conexiones en el pool
+                    idleTimeoutMillis: 30000, // cerrar conexiones inactivas después de 30 segundos
+                    connectionTimeoutMillis: 10000, // timeout de conexión ampliado para entornos remotos
+                });
 
-        // Manejo de errores del pool
-        this.pool.on('error', (err) => {
-            console.error('❌ Error inesperado en el pool de conexiones:', err);
-        });
+                // Manejo de errores del pool
+                this.pool.on('error', (err) => {
+                    console.error('❌ Error inesperado en el pool de conexiones:', err);
+                });
+            } catch (error) {
+                console.error('❌ Error al crear el pool de conexiones:', error);
+                this.pool = null;
+            }
+        } else {
+            console.warn('⚠️ DATABASE_URL no está configurada. La base de datos no estará disponible.');
+            this.pool = null;
+        }
     }
 
     // Probar conexión a la base de datos
     async testConnection() {
+        if (!this.pool) {
+            throw new Error('Pool de conexiones no inicializado. DATABASE_URL no está configurada.');
+        }
         try {
             const client = await this.pool.connect();
             const result = await client.query('SELECT NOW()');
@@ -32,6 +46,9 @@ class Database {
 
     // Ejecutar query
     async query(text, params) {
+        if (!this.pool) {
+            throw new Error('Pool de conexiones no inicializado. DATABASE_URL no está configurada.');
+        }
         const start = Date.now();
         try {
             const result = await this.pool.query(text, params);
@@ -46,11 +63,17 @@ class Database {
 
     // Obtener cliente del pool
     async getClient() {
+        if (!this.pool) {
+            throw new Error('Pool de conexiones no inicializado. DATABASE_URL no está configurada.');
+        }
         return await this.pool.connect();
     }
 
     // Ejecutar transacción
     async transaction(callback) {
+        if (!this.pool) {
+            throw new Error('Pool de conexiones no inicializado. DATABASE_URL no está configurada.');
+        }
         const client = await this.pool.connect();
         try {
             await client.query('BEGIN');
@@ -67,6 +90,9 @@ class Database {
 
     // Cerrar todas las conexiones
     async close() {
+        if (!this.pool) {
+            return;
+        }
         await this.pool.end();
         console.log('🔒 Conexiones a la base de datos cerradas');
     }
