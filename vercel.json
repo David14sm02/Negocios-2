@@ -8,10 +8,6 @@
   ],
   "routes": [
     {
-      "src": "/api/cron/sync-dolibarr",
-      "dest": "/api/cron/sync-dolibarr.js"
-    },
-    {
       "src": "/(.*)",
       "dest": "src/server.js"
     }
@@ -21,8 +17,5 @@
       "path": "/api/cron/sync-dolibarr",
       "schedule": "*/15 * * * *"
     }
-  ],
-  "env": {
-    "NODE_ENV": "production"
-  }
+  ]
 }
