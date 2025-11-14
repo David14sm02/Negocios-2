@@ -5,7 +5,16 @@ const compression = require('compression');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 const path = require('path');
-require('dotenv').config({ path: path.join(__dirname, '..', 'config.env') });
+const fs = require('fs');
+
+// Cargar variables de entorno: primero desde config.env (si existe), luego desde variables del sistema
+const configEnvPath = path.join(__dirname, '..', 'config.env');
+if (fs.existsSync(configEnvPath)) {
+    require('dotenv').config({ path: configEnvPath });
+} else {
+    // En Vercel o producción, las variables vienen del sistema
+    require('dotenv').config();
+}
 
 const db = require('./config/database');
 const errorHandler = require('./middleware/errorHandler');
@@ -190,7 +199,10 @@ async function startServer() {
 }
 
 // Manejo de señales de terminación (solo en desarrollo local)
-if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+// NO iniciar servidor en Vercel (serverless functions)
+const isVercel = process.env.VERCEL === '1' || process.env.VERCEL === 'true' || process.env.VERCEL === true;
+
+if (!isVercel) {
     process.on('SIGTERM', async () => {
         console.log('🛑 Recibida señal SIGTERM, cerrando servidor...');
         await db.close();
