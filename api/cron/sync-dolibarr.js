@@ -6,18 +6,6 @@
  * porque las funciones serverless no mantienen procesos en ejecución
  */
 
-const path = require('path');
-
-// Configurar dotenv para cargar variables de entorno (si existe config.env)
-try {
-    require('dotenv').config({ path: path.join(__dirname, '..', '..', 'config.env') });
-} catch (e) {
-    // En producción, las variables vienen de Vercel, no de archivo
-    console.log('ℹ️ Variables de entorno cargadas desde Vercel');
-}
-
-// Importar módulos usando rutas relativas
-// En Vercel, las funciones serverless se ejecutan desde la raíz del proyecto
 const db = require('../../src/config/database');
 const dolibarrService = require('../../src/services/dolibarrService');
 
