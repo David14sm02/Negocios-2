@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Política de Facturación - NetTech Solutions</title>
+    <meta name="description" content="Política de Facturación de NetTech Solutions">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/colors.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        .legal-page {
+            padding: 2rem 0;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .legal-page h1 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 0.5rem;
+        }
+        .legal-page h2 {
+            color: var(--text-primary);
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+        .legal-page h3 {
+            color: var(--text-primary);
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+        .legal-page p {
+            margin-bottom: 1rem;
+            line-height: 1.8;
+        }
+        .legal-page ul, .legal-page ol {
+            margin-bottom: 1rem;
+            padding-left: 2rem;
+        }
+        .legal-page li {
+            margin-bottom: 0.5rem;
+            line-height: 1.6;
+        }
+        .legal-page strong {
+            color: var(--text-primary);
+        }
+        .legal-page .last-updated {
+            font-style: italic;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+        .legal-page .section {
+            margin-bottom: 2rem;
+        }
+        .legal-page .highlight-box {
+            background-color: #f3f4f6;
+            border-left: 4px solid var(--primary-color);
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a href="index.html">
+                        <i class="fas fa-network-wired"></i>
+                        <span>NetTech Solutions</span>
+                    </a>
+                </div>
+                
+                <nav class="nav">
+                    <ul class="nav-list">
+                        <li><a href="index.html" class="nav-link">Inicio</a></li>
+                        <li><a href="catalog.html" class="nav-link">Catálogo</a></li>
+                        <li><a href="blog.html" class="nav-link">Blog</a></li>
+                        <li><a href="about.html" class="nav-link">Acerca de</a></li>
+                        <li><a href="faq.html" class="nav-link">FAQ</a></li>
+                    </ul>
+                </nav>
+                
+                <div class="header-actions">
+                    <a href="index.html" class="btn btn-outline">
+                        <i class="fas fa-home"></i> Volver al Inicio
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="legal-page">
+        <div class="container">
+            <h1>POLÍTICA DE FACTURACIÓN</h1>
+            <p class="last-updated"><strong>Última actualización:</strong> Diciembre 2024</p>
+
+            <div class="section">
+                <h2>1. INTRODUCCIÓN</h2>
+                <p><strong>NetTech Solutions</strong> se compromete a proporcionar facturación precisa y conforme con la legislación mexicana. Esta Política de Facturación establece cómo emitimos facturas, qué información requerimos y cómo manejamos las correcciones de facturas.</p>
+                <p>Al realizar una compra en nuestro sitio, usted acepta esta política. Le recomendamos leer cuidadosamente esta política antes de realizar una compra.</p>
+            </div>
+
+            <div class="section">
+                <h2>2. FACTURACIÓN ELECTRÓNICA (CFDI)</h2>
+                
+                <h3>2.1. Facturación Electrónica</h3>
+                <ul>
+                    <li>Emitimos <strong>facturas electrónicas (CFDI)</strong> según la legislación mexicana</li>
+                    <li>Todas las facturas se emiten en formato XML según el estándar del SAT (Servicio de Administración Tributaria)</li>
+                    <li>Las facturas se envían por email después de confirmar el pago</li>
+                    <li>Puede descargar su factura desde su cuenta en "Mis Pedidos"</li>
+                </ul>
+
+                <h3>2.2. Información en la Factura</h3>
+                <p>La factura incluye la siguiente información:</p>
+                <ul>
+                    <li><strong>Datos del Emisor:</strong> NetTech Solutions, RFC, Domicilio Fiscal</li>
+                    <li><strong>Datos del Receptor:</strong> Su nombre, RFC, Domicilio Fiscal</li>
+                    <li><strong>Conceptos:</strong> Productos comprados, cantidades, precios unitarios</li>
+                    <li><strong>Impuestos:</strong> IVA (16%) calculado y desglosado</li>
+                    <li><strong>Totales:</strong> Subtotal, IVA, Total</li>
+                    <li><strong>Forma de Pago:</strong> Método de pago utilizado</li>
+                    <li><strong>Folio Fiscal:</strong> UUID (Universally Unique Identifier) del CFDI</li>
+                </ul>
+
+                <h3>2.3. Validación de Facturas</h3>
+                <ul>
+                    <li>Puede validar su factura en el portal del SAT</li>
+                    <li>Ingrese el UUID de su factura en el portal de validación del SAT</li>
+                    <li>La factura estará disponible en el portal del SAT dentro de 24-48 horas</li>
+                </ul>
+            </div>
+
+            <div class="section">
+                <h2>3. DATOS FISCALES REQUERIDOS</h2>
+                
+                <h3>3.1. Información Necesaria</h3>
+                <p>Para emitir una factura, necesitamos los siguientes datos fiscales:</p>
+                <ul>
+                    <li><strong>RFC (Registro Federal de Contribuyentes):</strong> Obligatorio para facturación</li>
+                    <li><strong>Razón Social o Nombre:</strong> Nombre completo o razón social</li>
+                    <li><strong>Domicilio Fiscal:</strong> Dirección completa con código postal</li>
+                    <li><strong>Regimen Fiscal:</strong> Regimen fiscal según el SAT</li>
+                    <li><strong>Uso de CFDI:</strong> Uso que le dará a la factura (G01, G02, G03, etc.)</li>
+                </ul>
+
+                <h3>3.2. Facturación a Personas Físicas</h3>
+                <ul>
+                    <li>Si es persona física, necesitamos su RFC con homoclave</li>
+                    <li>Puede usar su CURP si no tiene RFC</li>
+                    <li>El nombre debe coincidir con su identificación oficial</li>
+                </ul>
+
+                <h3>3.3. Facturación a Personas Morales</h3>
+                <ul>
+                    <li>Si es persona moral, necesitamos el RFC de la empresa</li>
+                    <li>La razón social debe coincidir con el acta constitutiva</li>
+                    <li>El domicilio fiscal debe ser el registrado ante el SAT</li>
+                </ul>
+
+                <h3>3.4. Almacenamiento de Datos Fiscales</h3>
+                <ul>
+                    <li>Puede guardar sus datos fiscales en su cuenta para futuras compras</li>
+                    <li>Sus datos fiscales se almacenan de forma segura</li>
+                    <li>Puede actualizar sus datos fiscales en cualquier momento</li>
+                    <li>Sus datos fiscales se utilizan únicamente para facturación</li>
+                </ul>
+            </div>
+
+            <div class="section">
+                <h2>4. PROCESO DE FACTURACIÓN</h2>
+                
+                <h3>4.1. Facturación Automática</h3>
+                <ul>
+                    <li>La factura se genera automáticamente después de confirmar el pago</li>
+                    <li>La factura se envía por email dentro de 24-48 horas</li>
+                    <li>Puede descargar su factura desde su cuenta en "Mis Pedidos"</li>
+                    <li>La factura estará disponible en su cuenta por tiempo ilimitado</li>
+                </ul>
+
+                <h3>4.2. Tiempo de Emisión</h3>
+                <ul>
+                    <li><strong>Facturación Inmediata:</strong> La factura se genera automáticamente después del pago</li>
+                    <li><strong>Envió por Email:</strong> Dentro de 24-48 horas hábiles</li>
+                    <li><strong>Disponibilidad en Portal SAT:</strong> Dentro de 24-48 horas hábiles</li>
+                </ul>
+
+                <h3>4.3. Facturación Manual</h3>
+                <ul>
+                    <li>Si necesita facturación manual, contáctenos después de su compra</li>
+                    <li>Proporcione sus datos fiscales completos</li>
+                    <li>La facturación manual puede tardar 5-10 días hábiles</li>
+                    <li>Puede solicitar facturación manual hasta 30 días después de la compra</li>
+                </ul>
+            </div>
+
+            <div class="section">
+                <h2>5. CORRECCIÓN DE FACTURAS</h2>
+                
+                <h3>5.1. Solicitud de Corrección</h3>
+                <ul>
+                    <li>Si hay un error en su factura, contáctenos dentro de 30 días</li>
+                    <li>Proporcione los detalles del error</li>
+                    <li>Emitiremos una factura de corrección (CFDI de cancelación y nueva factura)</li>
+                    <li>El proceso de corrección puede tardar 5-10 días hábiles</li>
+                </ul>
+
+                <h3>5.2. Cancelación de Facturas</h3>
+                <ul>
+                    <li>Podemos cancelar una factura si:
+                        <ul>
+                            <li>Hay un error en los datos fiscales</li>
+                            <li>Hay un error en los productos o cantidades</li>
+                            <li>Hay un error en los precios o impuestos</li>
+                            <li>Se devuelve el producto completo</li>
+                        </ul>
+                    </li>
+                    <li>La cancelación de facturas está sujeta a aprobación</li>
+                    <li>Emitiremos una factura de cancelación (CFDI de cancelación)</li>
+                    <li>Si es necesario, emitiremos una nueva factura con los datos correctos</li>
+                </ul>
+
+                <h3>5.3. Límite de Tiempo para Correcciones</h3>
+                <ul>
+                    <li>Las solicitudes de corrección deben hacerse dentro de 30 días de la emisión</li>
+                    <li>Después de 30 días, las correcciones pueden no ser posibles</li>
+                    <li>Consulte con nuestro equipo de facturación para casos especiales</li>
+                </ul>
+            </div>
+
+            <div class="section">
+                <h2>6. FACTURACIÓN EN DEVOLUCIONES</h2>
+                
+                <h3>6.1. Cancelación de Factura por Devolución</h3>
+                <ul>
+                    <li>Si devuelve un producto, emitiremos una factura de cancelación (CFDI de cancelación)</li>
+                    <li>La factura de cancelación se enviará por email</li>
+                    <li>La factura de cancelación es necesaria para efectos fiscales</li>
+                    <li>El proceso de cancelación puede tardar 5-10 días hábiles</li>
+                </ul>
+
+                <h3>6.2. Facturación Parcial</h3>
+                <ul>
+                    <li>Si devuelve solo algunos productos de una orden, emitiremos una factura de cancelación parcial</li>
+                    <li>La factura de cancelación parcial mostrará solo los productos devueltos</li>
+                    <li>La factura original seguirá siendo válida para los productos no devueltos</li>
+                </ul>
+            </div>
+
+            <div class="section">
+                <h2>7. FACTURACIÓN A EMPRESAS</h2>
+                
+                <h3>7.1. Requisitos para Facturación Empresarial</h3>
+                <ul>
+                    <li>RFC de la empresa (obligatorio)</li>
+                    <li>Razón social registrada ante el SAT</li>
+                    <li>Domicilio fiscal registrado ante el SAT</li>
+                    <li>Regimen fiscal de la empresa</li>
+                    <li>Uso de CFDI apropiado</li>
+                </ul>
+
+                <h3>7.2. Facturación con Orden de Compra</h3>
+                <ul>
+                    <li>Si su empresa requiere orden de compra, inclúyala en el checkout</li>
+                    <li>La orden de compra se incluirá en la factura como referencia</li>
+                    <li>Verificamos que la orden de compra sea válida antes de emitir la factura</li>
+                </ul>
+
+                <h3>7.3. Términos de Pago</h3>
+                <ul>
+                    <li>Las facturas empresariales pueden tener términos de pago específicos</li>
+                    <li>Consulte con nuestro equipo de ventas para términos de pago empresariales</li>
+                    <li>Los términos de pago se indicarán en la factura</li>
+                </ul>
+            </div>
+
+            <div class="section">
+                <h2>8. CONSERVACIÓN DE FACTURAS</h2>
+                
+                <h3>8.1. Almacenamiento de Facturas</h3>
+                <ul>
+                    <li>Conservamos las facturas en nuestro sistema por tiempo ilimitado</li>
+                    <li>Puede acceder a sus facturas desde su cuenta en cualquier momento</li>
+                    <li>Le recomendamos conservar copias de sus facturas para sus registros</li>
+                    <li>Las facturas están disponibles para descarga en formato PDF y XML</li>
+                </ul>
+
+                <h3>8.2. Consulta de Facturas</h3>
+                <ul>
+                    <li>Puede consultar sus facturas en su cuenta en "Mis Pedidos"</li>
+                    <li>Puede buscar facturas por fecha, número de orden o folio fiscal</li>
+                    <li>Puede descargar sus facturas en formato PDF o XML</li>
+                    <li>Puede validar sus facturas en el portal del SAT</li>
+                </ul>
+            </div>
+
+            <div class="section">
+                <h2>9. CONFIDENCIALIDAD DE DATOS FISCALES</h2>
+                
+                <h3>9.1. Protección de Datos</h3>
+                <ul>
+                    <li>Sus datos fiscales se almacenan de forma segura</li>
+                    <li>Utilizamos encriptación para proteger sus datos fiscales</li>
+                    <li>Sus datos fiscales se utilizan únicamente para facturación</li>
+                    <li>No compartimos sus datos fiscales con terceros sin su consentimiento</li>
+                </ul>
+
+                <h3>9.2. Cumplimiento Legal</h3>
+                <ul>
+                    <li>Cumplimos con la Ley Federal de Protección de Datos Personales</li>
+                    <li>Cumplimos con las obligaciones fiscales del SAT</li>
+                    <li>Conservamos las facturas según los requisitos legales</li>
+                    <li>Las facturas pueden ser consultadas por autoridades fiscales cuando sea requerido</li>
+                </ul>
+            </div>
+
+            <div class="section">
+                <h2>10. CONTACTO PARA FACTURACIÓN</h2>
+                <p>Si tiene preguntas sobre facturación, puede contactarnos:</p>
+                <ul>
+                    <li><strong>Email:</strong> facturacion@nettechsolutions.com</li>
+                    <li><strong>Teléfono:</strong> +52 55 1234 5678</li>
+                    <li><strong>Horario de Atención:</strong> Lunes a Viernes, 9:00 AM - 6:00 PM</li>
+                </ul>
+                <p>También puede contactarnos para:</p>
+                <ul>
+                    <li>Solicitar corrección de facturas</li>
+                    <li>Solicitar cancelación de facturas</li>
+                    <li>Actualizar datos fiscales</li>
+                    <li>Consultar sobre facturación empresarial</li>
+                </ul>
+            </div>
+
+            <div class="section">
+                <h2>11. CAMBIOS A ESTA POLÍTICA</h2>
+                <p>Nos reservamos el derecho de modificar esta Política de Facturación en cualquier momento. Los cambios entrarán en vigor inmediatamente después de su publicación. Le recomendamos revisar esta política periódicamente.</p>
+            </div>
+
+            <div class="section">
+                <h2>12. LEY APLICABLE</h2>
+                <p>Esta política se rige por las leyes de México, incluyendo la Ley del Impuesto al Valor Agregado y las disposiciones del SAT. Cualquier disputa será resuelta de acuerdo con estas leyes.</p>
+            </div>
+
+            <div class="section">
+                <p><strong>Al realizar una compra, usted acepta esta Política de Facturación. Si tiene preguntas sobre facturación, no dude en contactarnos.</strong></p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <i class="fas fa-network-wired"></i>
+                        <span>NetTech Solutions</span>
+                    </div>
+                    <p>Especialistas en productos para instalaciones de redes profesionales.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Enlaces Rápidos</h4>
+                    <ul>
+                        <li><a href="catalog.html">Catálogo</a></li>
+                        <li><a href="blog.html">Blog</a></li>
+                        <li><a href="about.html">Acerca de</a></li>
+                        <li><a href="faq.html">FAQ</a></li>
+                        <li><a href="#contact">Contacto</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Documentos Legales</h4>
+                    <ul>
+                        <li><a href="aviso-legal.html">Aviso Legal</a></li>
+                        <li><a href="politica-privacidad.html">Política de Privacidad</a></li>
+                        <li><a href="terminos-condiciones.html">Términos y Condiciones</a></li>
+                        <li><a href="politica-reembolsos.html">Política de Reembolsos</a></li>
+                        <li><a href="politica-envios.html">Política de Envíos</a></li>
+                        <li><a href="politica-precios-impuestos.html">Política de Precios</a></li>
+                        <li><a href="politica-facturacion.html">Política de Facturación</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Contacto</h4>
+                    <div class="contact-info">
+                        <p><i class="fas fa-phone"></i> +52 55 1234 5678</p>
+                        <p><i class="fas fa-envelope"></i> info@nettechsolutions.com</p>
+                        <p><i class="fas fa-map-marker-alt"></i> Ciudad de México, México</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2024 NetTech Solutions. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="js/utils.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
+

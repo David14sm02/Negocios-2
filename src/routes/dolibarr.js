@@ -51,7 +51,7 @@ router.post('/sync/product/:productId', authenticateToken, requireAdmin, async (
             });
         }
         
-        const result = await dolibarrService.syncProduct(productResult.rows[0]);
+        const result = await dolibarrService.syncProduct(productResult.rows[0], db);
         res.json(result);
     } catch (error) {
         next(error);
@@ -131,6 +131,124 @@ router.get('/orders', authenticateToken, requireAdmin, async (req, res, next) =>
         res.json(result);
     } catch (error) {
         next(error);
+    }
+});
+
+// POST /api/dolibarr/sync/from-dolibarr/product/:dolibarrId - Sincronizar producto desde Dolibarr
+router.post('/sync/from-dolibarr/product/:dolibarrId', authenticateToken, requireAdmin, async (req, res, next) => {
+    try {
+        const { dolibarrId } = req.params;
+        
+        // Obtener producto de Dolibarr
+        const dolibarrProduct = await dolibarrService.getProductWithStock(parseInt(dolibarrId));
+        
+        if (!dolibarrProduct) {
+            return res.status(404).json({
+                success: false,
+                error: 'Producto no encontrado en Dolibarr'
+            });
+        }
+        
+        const result = await dolibarrService.syncProductFromDolibarr(dolibarrProduct, db);
+        res.json({
+            success: true,
+            message: `Producto ${result.action} exitosamente`,
+            data: result
+        });
+    } catch (error) {
+        next(error);
+    }
+});
+
+// POST /api/dolibarr/sync/from-dolibarr/stock/:sku - Sincronizar stock desde Dolibarr
+router.post('/sync/from-dolibarr/stock/:sku', authenticateToken, requireAdmin, async (req, res, next) => {
+    try {
+        const { sku } = req.params;
+        const { dolibarr_id } = req.body;
+        
+        const result = await dolibarrService.syncStockFromDolibarr(sku, dolibarr_id, db);
+        res.json({
+            success: true,
+            message: 'Stock actualizado exitosamente',
+            data: result
+        });
+    } catch (error) {
+        next(error);
+    }
+});
+
+// POST /api/dolibarr/sync/from-dolibarr/all - Sincronizar todos los productos desde Dolibarr
+router.post('/sync/from-dolibarr/all', authenticateToken, requireAdmin, async (req, res, next) => {
+    try {
+        const { onlyNew = false, limit = null } = req.body;
+        
+        const result = await dolibarrService.syncAllProductsFromDolibarr(db, {
+            onlyNew: onlyNew === true || onlyNew === 'true',
+            limit: limit ? parseInt(limit) : null
+        });
+        
+        res.json({
+            success: true,
+            message: 'Sincronización masiva completada',
+            data: result
+        });
+    } catch (error) {
+        next(error);
+    }
+});
+
+// POST /api/dolibarr/webhook - Webhook para recibir notificaciones de Dolibarr
+router.post('/webhook', express.json(), async (req, res, next) => {
+    try {
+        // Validar autenticación (token secreto en header o body)
+        const webhookSecret = process.env.DOLIBARR_WEBHOOK_SECRET;
+        const receivedSecret = req.headers['x-dolibarr-secret'] || req.body.secret;
+        
+        if (webhookSecret && receivedSecret !== webhookSecret) {
+            return res.status(401).json({
+                success: false,
+                error: 'No autorizado'
+            });
+        }
+        
+        const { event, data } = req.body;
+        
+        // Procesar diferentes tipos de eventos
+        switch (event) {
+            case 'product.created':
+            case 'product.updated':
+                if (data && data.id) {
+                    const dolibarrProduct = await dolibarrService.getProductWithStock(data.id);
+                    if (dolibarrProduct) {
+                        await dolibarrService.syncProductFromDolibarr(dolibarrProduct, db);
+                    }
+                }
+                break;
+                
+            case 'stock.movement':
+            case 'stock.updated':
+                if (data && (data.ref || data.sku || data.product_id)) {
+                    const sku = data.ref || data.sku;
+                    const dolibarrId = data.product_id || data.id;
+                    await dolibarrService.syncStockFromDolibarr(sku, dolibarrId, db);
+                }
+                break;
+                
+            default:
+                console.log(`⚠️ Evento no manejado: ${event}`);
+        }
+        
+        res.json({
+            success: true,
+            message: 'Webhook procesado'
+        });
+    } catch (error) {
+        console.error('❌ Error procesando webhook de Dolibarr:', error);
+        // Responder 200 para que Dolibarr no reintente
+        res.status(200).json({
+            success: false,
+            error: error.message
+        });
     }
 });
 

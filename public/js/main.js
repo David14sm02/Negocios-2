@@ -263,7 +263,7 @@ class ECommerceApp {
         scrollBtn.innerHTML = '<i class="fas fa-arrow-up"></i>';
         scrollBtn.style.cssText = `
             position: fixed;
-            bottom: 2rem;
+            bottom: 9rem;
             right: 2rem;
             width: 50px;
             height: 50px;
@@ -275,7 +275,7 @@ class ECommerceApp {
             opacity: 0;
             visibility: hidden;
             transition: all 0.3s ease;
-            z-index: 1000;
+            z-index: 997;
             box-shadow: var(--shadow-lg);
         `;
 

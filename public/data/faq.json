@@ -1,0 +1,348 @@
+{
+  "faqs": [
+    {
+      "id": 1,
+      "question": "¿Cuáles son los métodos de pago disponibles?",
+      "answer": "Aceptamos pagos con tarjeta de crédito y débito a través de Stripe. También puedes contactarnos para otras opciones de pago como transferencia bancaria o pagos corporativos.",
+      "keywords": ["pago", "pagos", "tarjeta", "credito", "debito", "stripe", "metodo", "metodos", "como pagar", "formas pago", "aceptan", "tarjetas"],
+      "category": "pagos"
+    },
+    {
+      "id": 2,
+      "question": "¿Cuánto tiempo tarda el envío?",
+      "answer": "El tiempo de envío depende de tu ubicación. Generalmente, los pedidos se procesan en 1-2 días hábiles y el envío tarda entre 3-7 días hábiles. Para envíos express, contáctanos para opciones más rápidas.",
+      "keywords": ["envio", "envios", "tiempo", "entrega", "cuanto tarda", "dias", "cuando llega", "demora", "plazo entrega", "tiempo entrega"],
+      "category": "envios"
+    },
+    {
+      "id": 3,
+      "question": "¿Ofrecen envío gratuito?",
+      "answer": "Sí, ofrecemos envío gratuito para pedidos superiores a $100. Para pedidos menores, el costo de envío se calcula al momento del checkout según tu ubicación.",
+      "keywords": ["envio gratis", "envio gratuito", "gratis", "gratuito", "costo envio", "envio sin costo", "free shipping", "envio incluido"],
+      "category": "envios"
+    },
+    {
+      "id": 4,
+      "question": "¿Puedo cancelar o modificar mi pedido?",
+      "answer": "Puedes cancelar o modificar tu pedido antes de que sea procesado. Una vez procesado, contáctanos inmediatamente y haremos nuestro mejor esfuerzo para ayudarte. Los pedidos ya enviados no pueden cancelarse, pero puedes solicitar una devolución.",
+      "keywords": ["cancelar", "cancelacion", "modificar", "cambio", "pedido", "orden", "devolver", "anular", "eliminar pedido"],
+      "category": "pedidos"
+    },
+    {
+      "id": 5,
+      "question": "¿Qué productos tienen en stock?",
+      "answer": "Puedes verificar el stock disponible en la página de cada producto. Si un producto está agotado, puedes contactarnos para conocer la fecha de reposición o recibir una notificación cuando esté disponible nuevamente.",
+      "keywords": ["stock", "disponible", "disponibilidad", "agotado", "inventario", "hay", "tienen", "existe", "en existencia"],
+      "category": "productos"
+    },
+    {
+      "id": 6,
+      "question": "¿Ofrecen garantía en los productos?",
+      "answer": "Sí, todos nuestros productos tienen garantía del fabricante. La duración de la garantía varía según el producto (generalmente entre 1-3 años). Consulta los detalles en la página del producto o contáctanos para más información.",
+      "keywords": ["garantia", "garantía", "garantizado", "devolucion", "devolución", "reembolso", "cobertura", "warranty"],
+      "category": "productos"
+    },
+    {
+      "id": 7,
+      "question": "¿Cómo puedo rastrear mi pedido?",
+      "answer": "Una vez que tu pedido sea enviado, recibirás un email con el número de seguimiento. También puedes ver el estado de tu pedido en la sección 'Mis Pedidos' si has iniciado sesión. Si no recibiste el email, contáctanos con tu número de pedido.",
+      "keywords": ["rastrear", "seguimiento", "tracking", "donde esta", "estado pedido", "numero seguimiento", "localizar", "ubicar pedido"],
+      "category": "pedidos"
+    },
+    {
+      "id": 8,
+      "question": "¿Qué categorías de productos tienen?",
+      "answer": "Ofrecemos cables de red (Cat5e, Cat6, Cat6a, Cat7, fibra óptica), conectores (RJ45, conectores de fibra, patch panels), equipos de red (switches, routers, access points) y herramientas profesionales para instalación.",
+      "keywords": ["categorias", "categorías", "productos", "que venden", "tipos", "cables", "conectores", "equipos", "herramientas", "que tienen"],
+      "category": "productos"
+    },
+    {
+      "id": 9,
+      "question": "¿Puedo hacer pedidos personalizados o a granel?",
+      "answer": "Sí, ofrecemos opciones para pedidos personalizados y a granel. Contáctanos con tus requerimientos específicos (cantidad, especificaciones técnicas, etc.) y te proporcionaremos una cotización personalizada con descuentos por volumen.",
+      "keywords": ["personalizado", "granel", "mayoreo", "mayorista", "cotizacion", "cotización", "pedido especial", "volumen", "cantidad"],
+      "category": "pedidos"
+    },
+    {
+      "id": 10,
+      "question": "¿Cómo puedo contactar con soporte?",
+      "answer": "Puedes contactarnos por email a info@nettechsolutions.com, por teléfono al +1 (555) 123-4567, o usar el formulario de contacto en nuestra página 'Acerca de'. Nuestro horario de atención es de lunes a viernes de 9:00 AM a 6:00 PM.",
+      "keywords": ["contacto", "contactar", "soporte", "ayuda", "email", "telefono", "teléfono", "comunicarse", "atencion", "atención"],
+      "category": "soporte"
+    },
+    {
+      "id": 11,
+      "question": "¿Necesito crear una cuenta para comprar?",
+      "answer": "No es obligatorio, pero te recomendamos crear una cuenta para hacer un seguimiento más fácil de tus pedidos, acceder a ofertas exclusivas, guardar direcciones de envío y ver tu historial de compras.",
+      "keywords": ["cuenta", "registro", "registrarse", "crear cuenta", "necesito cuenta", "obligatorio", "requisito"],
+      "category": "cuenta"
+    },
+    {
+      "id": 12,
+      "question": "¿Qué hago si recibí un producto defectuoso?",
+      "answer": "Si recibiste un producto defectuoso, contáctanos inmediatamente (dentro de 48 horas) con fotos del producto y detalles del problema. Te ayudaremos con el proceso de reemplazo o reembolso según corresponda.",
+      "keywords": ["defectuoso", "defecto", "roto", "malo", "problema", "no funciona", "error", "dañado", "averiado"],
+      "category": "devoluciones"
+    },
+    {
+      "id": 13,
+      "question": "¿Ofrecen asesoría técnica?",
+      "answer": "Sí, nuestro equipo de soporte técnico está disponible para ayudarte con consultas sobre productos, instalación, configuración y troubleshooting. Contáctanos por email o teléfono para más información.",
+      "keywords": ["asesoria", "asesoría", "tecnica", "técnica", "ayuda instalacion", "instalación", "configuracion", "configuración", "soporte tecnico"],
+      "category": "soporte"
+    },
+    {
+      "id": 14,
+      "question": "¿Dónde están ubicados?",
+      "answer": "Estamos ubicados en Ciudad, País. También ofrecemos envíos a nivel nacional e internacional. Consulta nuestra página de contacto para más detalles sobre nuestra ubicación y horarios de atención.",
+      "keywords": ["ubicacion", "ubicación", "donde", "direccion", "dirección", "local", "tienda fisica", "física", "sucursal"],
+      "category": "informacion"
+    },
+    {
+      "id": 15,
+      "question": "¿Tienen descuentos o promociones?",
+      "answer": "Sí, ofrecemos descuentos y promociones especiales regularmente. Suscríbete a nuestro newsletter o sigue nuestras redes sociales para estar al tanto de las ofertas. También tenemos descuentos por volumen en pedidos grandes.",
+      "keywords": ["descuento", "descuentos", "promocion", "promoción", "oferta", "ofertas", "rebaja", "rebajas", "precio especial"],
+      "category": "promociones"
+    },
+    {
+      "id": 16,
+      "question": "¿Cuál es la política de devoluciones?",
+      "answer": "Aceptamos devoluciones dentro de los 30 días posteriores a la compra, siempre que el producto esté en su estado original, sin usar y con su empaque. Los costos de envío de devolución corren por cuenta del cliente, excepto en casos de productos defectuosos.",
+      "keywords": ["devolucion", "devoluciones", "política devoluciones", "devolver producto", "reembolso", "retorno", "cambiar producto"],
+      "category": "devoluciones"
+    },
+    {
+      "id": 17,
+      "question": "¿Puedo cambiar el método de pago después de realizar el pedido?",
+      "answer": "Si el pedido aún no ha sido procesado, puedes contactarnos para cambiar el método de pago. Una vez procesado, no es posible cambiar el método de pago, pero puedes cancelar y realizar un nuevo pedido.",
+      "keywords": ["cambiar pago", "modificar pago", "metodo pago", "forma pago", "cambio pago"],
+      "category": "pagos"
+    },
+    {
+      "id": 18,
+      "question": "¿Ofrecen facturación?",
+      "answer": "Sí, ofrecemos facturación para empresas y clientes que lo requieran. Al realizar tu pedido, puedes especificar que necesitas factura y proporcionar los datos fiscales correspondientes.",
+      "keywords": ["factura", "facturacion", "facturación", "factura fiscal", "datos fiscales", "RFC", "empresa"],
+      "category": "pagos"
+    },
+    {
+      "id": 19,
+      "question": "¿Cuáles son los costos de envío?",
+      "answer": "Los costos de envío varían según el peso, dimensiones y destino del pedido. Se calculan automáticamente al momento del checkout. Para pedidos superiores a $100, el envío es gratuito. Contáctanos para cotizaciones de envíos especiales.",
+      "keywords": ["costo envio", "precio envio", "tarifa envio", "cuanto cuesta envio", "envio precio"],
+      "category": "envios"
+    },
+    {
+      "id": 20,
+      "question": "¿Hacen envíos internacionales?",
+      "answer": "Sí, realizamos envíos internacionales. Los tiempos y costos varían según el país de destino. Contáctanos con tu ubicación para obtener una cotización precisa de envío internacional.",
+      "keywords": ["envio internacional", "envios internacionales", "extranjero", "otros paises", "otros países", "exportacion"],
+      "category": "envios"
+    },
+    {
+      "id": 21,
+      "question": "¿Puedo recoger mi pedido en tienda?",
+      "answer": "Sí, ofrecemos la opción de recoger en tienda (pickup) sin costo adicional. Al realizar tu pedido, selecciona la opción 'Recoger en tienda' y te notificaremos cuando esté listo para recoger.",
+      "keywords": ["recoger", "pickup", "retirar", "tienda", "sucursal", "recoger pedido", "retiro local"],
+      "category": "envios"
+    },
+    {
+      "id": 22,
+      "question": "¿Cómo sé si un producto es compatible con mi equipo?",
+      "answer": "Cada producto tiene especificaciones técnicas detalladas en su página. Si tienes dudas sobre compatibilidad, nuestro equipo de soporte técnico puede ayudarte. Contáctanos con el modelo de tu equipo y el producto que te interesa.",
+      "keywords": ["compatible", "compatibilidad", "funciona con", "sirve para", "especificaciones", "requisitos"],
+      "category": "productos"
+    },
+    {
+      "id": 23,
+      "question": "¿Ofrecen instalación de productos?",
+      "answer": "Ofrecemos servicios de instalación profesional para ciertos productos. Contáctanos para conocer la disponibilidad en tu área y obtener una cotización del servicio de instalación.",
+      "keywords": ["instalacion", "instalación", "servicio instalacion", "instalar", "montaje", "instalacion profesional"],
+      "category": "servicios"
+    },
+    {
+      "id": 24,
+      "question": "¿Tienen productos certificados?",
+      "answer": "Sí, muchos de nuestros productos cuentan con certificaciones internacionales (ISO, TIA, UL, etc.). Las certificaciones se indican en la descripción de cada producto. Si necesitas productos con certificaciones específicas, contáctanos.",
+      "keywords": ["certificado", "certificacion", "certificación", "certificado ISO", "estandar", "estándar", "norma"],
+      "category": "productos"
+    },
+    {
+      "id": 25,
+      "question": "¿Cómo puedo saber el estado de mi pedido?",
+      "answer": "Puedes ver el estado de tu pedido en la sección 'Mis Pedidos' si has iniciado sesión, o usando el número de seguimiento que recibiste por email. También puedes contactarnos con tu número de pedido para consultar el estado.",
+      "keywords": ["estado pedido", "status pedido", "donde esta mi pedido", "seguimiento pedido", "consulta pedido"],
+      "category": "pedidos"
+    },
+    {
+      "id": 26,
+      "question": "¿Qué pasa si mi pedido llega dañado?",
+      "answer": "Si tu pedido llega dañado, contáctanos inmediatamente (dentro de 48 horas) con fotos del daño y del empaque. Te enviaremos un reemplazo sin costo adicional o procesaremos un reembolso completo.",
+      "keywords": ["dañado", "roto", "llegó mal", "empaque roto", "producto dañado", "averiado"],
+      "category": "devoluciones"
+    },
+    {
+      "id": 27,
+      "question": "¿Puedo agregar productos a un pedido ya realizado?",
+      "answer": "Si el pedido aún no ha sido procesado, puedes contactarnos para agregar productos. Una vez procesado, deberás realizar un nuevo pedido. Te recomendamos revisar bien tu carrito antes de finalizar la compra.",
+      "keywords": ["agregar producto", "añadir producto", "modificar pedido", "cambiar pedido", "agregar al pedido"],
+      "category": "pedidos"
+    },
+    {
+      "id": 28,
+      "question": "¿Ofrecen garantía extendida?",
+      "answer": "Algunos productos tienen opción de garantía extendida. Consulta la página del producto o contáctanos para conocer las opciones de garantía extendida disponibles y sus costos.",
+      "keywords": ["garantia extendida", "garantía extendida", "garantia adicional", "cobertura extendida"],
+      "category": "productos"
+    },
+    {
+      "id": 29,
+      "question": "¿Cómo puedo actualizar mi información de cuenta?",
+      "answer": "Puedes actualizar tu información de cuenta iniciando sesión y yendo a la sección de perfil. Allí podrás modificar tu dirección, teléfono, email y preferencias de cuenta.",
+      "keywords": ["actualizar cuenta", "modificar cuenta", "cambiar datos", "editar perfil", "actualizar perfil", "cambiar direccion"],
+      "category": "cuenta"
+    },
+    {
+      "id": 30,
+      "question": "¿Tienen programa de puntos o recompensas?",
+      "answer": "Actualmente estamos desarrollando un programa de puntos y recompensas. Suscríbete a nuestro newsletter para ser notificado cuando esté disponible. Mientras tanto, ofrecemos descuentos por volumen y promociones especiales.",
+      "keywords": ["puntos", "recompensas", "programa fidelidad", "puntos cliente", "beneficios", "programa puntos"],
+      "category": "promociones"
+    },
+    {
+      "id": 31,
+      "question": "¿Puedo pagar a plazos?",
+      "answer": "Ofrecemos opciones de pago a plazos a través de nuestros socios financieros. Las opciones disponibles se muestran al momento del checkout. Contáctanos para más información sobre planes de pago especiales.",
+      "keywords": ["pago plazos", "cuotas", "financiamiento", "pago diferido", "mensualidades", "plan pago"],
+      "category": "pagos"
+    },
+    {
+      "id": 32,
+      "question": "¿Qué tipos de cables de red tienen?",
+      "answer": "Tenemos una amplia variedad de cables de red: Cat5e, Cat6, Cat6a, Cat7, y fibra óptica (monomodo y multimodo). También ofrecemos diferentes longitudes y configuraciones según tus necesidades.",
+      "keywords": ["cables red", "cable ethernet", "cat5", "cat6", "cat7", "fibra optica", "cableado", "cables"],
+      "category": "productos"
+    },
+    {
+      "id": 33,
+      "question": "¿Ofrecen capacitación técnica?",
+      "answer": "Sí, ofrecemos cursos y capacitación técnica sobre instalación de redes, configuración de equipos y mejores prácticas. Contáctanos para conocer los cursos disponibles y fechas.",
+      "keywords": ["capacitacion", "capacitación", "curso", "cursos", "entrenamiento", "formacion", "formación", "aprender"],
+      "category": "servicios"
+    },
+    {
+      "id": 34,
+      "question": "¿Cómo puedo solicitar una cotización?",
+      "answer": "Puedes solicitar una cotización contactándonos por email, teléfono o usando el formulario de contacto. Especifica los productos, cantidades y cualquier requerimiento especial. Te responderemos en un plazo de 24-48 horas.",
+      "keywords": ["cotizacion", "cotización", "presupuesto", "precio", "cotizar", "solicitar cotizacion"],
+      "category": "pedidos"
+    },
+    {
+      "id": 35,
+      "question": "¿Tienen productos para redes inalámbricas?",
+      "answer": "Sí, ofrecemos una amplia gama de productos para redes inalámbricas: access points, routers, antenas, amplificadores de señal y equipos de gestión. Consulta nuestro catálogo en la categoría de equipos de red.",
+      "keywords": ["inalambrico", "inalámbrico", "wifi", "wireless", "access point", "router", "antena"],
+      "category": "productos"
+    },
+    {
+      "id": 36,
+      "question": "¿Puedo devolver un producto si no es lo que esperaba?",
+      "answer": "Sí, puedes devolver productos dentro de los 30 días posteriores a la compra si no cumplen tus expectativas, siempre que estén en su estado original, sin usar y con su empaque. Los costos de envío de devolución corren por cuenta del cliente.",
+      "keywords": ["devolver", "no me sirve", "no es lo esperado", "cambiar", "no quiero", "arrepentimiento"],
+      "category": "devoluciones"
+    },
+    {
+      "id": 37,
+      "question": "¿Tienen productos para exteriores?",
+      "answer": "Sí, tenemos productos diseñados específicamente para exteriores, incluyendo cables, conectores y equipos con protección IP (Ingress Protection) para resistir condiciones climáticas adversas. Consulta las especificaciones de cada producto.",
+      "keywords": ["exterior", "outdoor", "intemperie", "resistentes agua", "IP", "proteccion", "protección"],
+      "category": "productos"
+    },
+    {
+      "id": 38,
+      "question": "¿Cómo puedo resetear mi contraseña?",
+      "answer": "Puedes resetear tu contraseña desde la página de inicio de sesión haciendo clic en '¿Olvidaste tu contraseña?'. Te enviaremos un email con instrucciones para crear una nueva contraseña.",
+      "keywords": ["resetear contraseña", "olvide contraseña", "recuperar contraseña", "cambiar contraseña", "password"],
+      "category": "cuenta"
+    },
+    {
+      "id": 39,
+      "question": "¿Ofrecen servicio de diseño de redes?",
+      "answer": "Sí, ofrecemos servicios de diseño y consultoría para proyectos de infraestructura de red. Nuestros ingenieros pueden ayudarte a diseñar la solución más adecuada para tus necesidades. Contáctanos para más información.",
+      "keywords": ["diseño redes", "diseño red", "consultoria", "consultoría", "proyecto", "ingenieria", "ingeniería"],
+      "category": "servicios"
+    },
+    {
+      "id": 40,
+      "question": "¿Tienen productos en oferta ahora mismo?",
+      "answer": "Sí, regularmente tenemos productos en oferta. Puedes ver las ofertas actuales en nuestro catálogo, filtrando por 'Ofertas' o 'Descuentos'. También puedes suscribirte a nuestro newsletter para recibir notificaciones de ofertas especiales.",
+      "keywords": ["oferta", "ofertas", "rebaja", "rebajas", "liquidacion", "liquidación", "precio especial", "ahora"],
+      "category": "promociones"
+    },
+    {
+      "id": 41,
+      "question": "¿Puedo hacer un pedido por teléfono?",
+      "answer": "Sí, puedes realizar pedidos por teléfono llamando al +1 (555) 123-4567 durante nuestro horario de atención (lunes a viernes de 9:00 AM a 6:00 PM). Nuestro equipo te ayudará a completar tu pedido.",
+      "keywords": ["pedido telefono", "pedido teléfono", "llamar", "telefono", "teléfono", "pedir por telefono"],
+      "category": "pedidos"
+    },
+    {
+      "id": 42,
+      "question": "¿Qué métodos de envío tienen disponibles?",
+      "answer": "Ofrecemos diferentes métodos de envío: estándar (3-7 días), express (1-3 días) y overnight (24 horas) según disponibilidad. Los métodos disponibles se muestran al momento del checkout según tu ubicación.",
+      "keywords": ["metodos envio", "métodos envío", "tipos envio", "opciones envio", "express", "urgente", "rapido"],
+      "category": "envios"
+    },
+    {
+      "id": 43,
+      "question": "¿Tienen productos para data centers?",
+      "answer": "Sí, tenemos una línea especializada de productos para data centers: cables de alta densidad, patch panels, switches gestionables, sistemas de gestión de cables y más. Consulta nuestra categoría de equipos profesionales.",
+      "keywords": ["data center", "datacenter", "centro datos", "servidor", "rack", "alta densidad"],
+      "category": "productos"
+    },
+    {
+      "id": 44,
+      "question": "¿Cómo puedo suscribirme al newsletter?",
+      "answer": "Puedes suscribirte al newsletter desde nuestra página de inicio, ingresando tu email en el formulario de suscripción. También puedes hacerlo desde tu cuenta de usuario en la sección de preferencias.",
+      "keywords": ["newsletter", "boletin", "boletín", "suscripcion", "suscripción", "email", "noticias"],
+      "category": "informacion"
+    },
+    {
+      "id": 45,
+      "question": "¿Tienen productos para redes industriales?",
+      "answer": "Sí, tenemos productos especializados para entornos industriales: cables y equipos resistentes a temperaturas extremas, vibraciones y ambientes hostiles. Consulta nuestras especificaciones técnicas para más detalles.",
+      "keywords": ["industrial", "industria", "resistente", "extremo", "hostil", "duro", "robusto"],
+      "category": "productos"
+    }
+  ],
+  "greetings": [
+    "¡Hola! ¿En qué puedo ayudarte hoy?",
+    "Hola, soy tu asistente virtual. ¿Tienes alguna pregunta?",
+    "¡Bienvenido! Estoy aquí para ayudarte con cualquier duda.",
+    "Hola, ¿cómo puedo asistirte hoy?",
+    "¡Hola! Pregúntame lo que necesites sobre nuestros productos y servicios."
+  ],
+  "fallback": "Lo siento, no entendí completamente tu pregunta. Puedes reformularla de otra manera o elegir una de las sugerencias a continuación. También puedes contactarnos directamente a info@nettechsolutions.com o al +1 (555) 123-4567.",
+  "suggestions": [
+    "Métodos de pago",
+    "Tiempo de envío",
+    "Política de devoluciones",
+    "Contacto",
+    "Productos en stock",
+    "Garantías",
+    "Cotizaciones"
+  ],
+  "categories": {
+    "pagos": ["Métodos de pago", "Facturación", "Pago a plazos"],
+    "envios": ["Tiempo de envío", "Costos de envío", "Envío internacional"],
+    "pedidos": ["Rastrear pedido", "Cancelar pedido", "Modificar pedido"],
+    "productos": ["Categorías", "Stock", "Compatibilidad", "Especificaciones"],
+    "devoluciones": ["Política devoluciones", "Producto defectuoso", "Cambios"],
+    "soporte": ["Contacto", "Asesoría técnica", "Soporte"],
+    "cuenta": ["Crear cuenta", "Actualizar datos", "Recuperar contraseña"],
+    "promociones": ["Descuentos", "Ofertas", "Programa puntos"],
+    "servicios": ["Instalación", "Capacitación", "Diseño de redes"],
+    "informacion": ["Ubicación", "Newsletter", "Horarios"]
+  }
+}

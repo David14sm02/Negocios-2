@@ -4,9 +4,17 @@
     {
       "src": "api/index.js",
       "use": "@vercel/node"
+    },
+    {
+      "src": "api/cron/sync-dolibarr.js",
+      "use": "@vercel/node"
     }
   ],
   "routes": [
+    {
+      "src": "/api/cron/sync-dolibarr",
+      "dest": "/api/cron/sync-dolibarr.js"
+    },
     {
       "src": "/(.*)",
       "dest": "/api/index.js"
