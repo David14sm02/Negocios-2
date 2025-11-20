@@ -27,6 +27,11 @@ class Database {
         }
     }
 
+    // Verificar si la base de datos está disponible
+    isAvailable() {
+        return this.pool !== null && this.pool !== undefined;
+    }
+
     // Probar conexión a la base de datos
     async testConnection() {
         if (!this.pool) {

@@ -2,6 +2,7 @@ const express = require('express');
 const db = require('../config/database');
 const { authenticateToken } = require('../middleware/auth');
 const { validateCheckoutSession } = require('../middleware/validation');
+const requireDatabase = require('../middleware/requireDatabase');
 const { stripe, getSuccessUrl, getCancelUrl } = require('../services/stripeService');
 
 const router = express.Router();
@@ -29,7 +30,7 @@ const appendQueryParam = (url, key, value) => {
     return `${base}${separator}${param}${hash ? `#${hash}` : ''}`;
 };
 
-router.post('/checkout', authenticateToken, validateCheckoutSession, async (req, res, next) => {
+router.post('/checkout', authenticateToken, requireDatabase, validateCheckoutSession, async (req, res, next) => {
     try {
         const userId = req.user.id;
         const { order_id, success_url, cancel_url } = req.body;
@@ -126,6 +127,18 @@ router.post('/checkout', authenticateToken, validateCheckoutSession, async (req,
             line_items: lineItems,
             success_url: successUrl,
             cancel_url: cancelUrl,
+            // Configurar facturación automática
+            invoice_creation: {
+                enabled: true,
+                invoice_data: {
+                    description: `Factura para pedido ${order.order_number}`,
+                    metadata: {
+                        order_id: order.id.toString(),
+                        order_number: order.order_number,
+                        user_id: userId.toString(),
+                    },
+                },
+            },
             metadata: {
                 order_id: order.id,
                 order_number: order.order_number,

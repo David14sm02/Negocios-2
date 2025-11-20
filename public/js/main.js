@@ -16,6 +16,7 @@ class ECommerceApp {
         this.setupMobileMenu();
         this.setupScrollEffects();
         this.setupAuthentication();
+        this.setupContactForms();
     }
 
     bindEvents() {
@@ -381,13 +382,35 @@ class ECommerceApp {
                     return;
                 }
                 
+                // Obtener botón de envío para mostrar estado de carga
+                const submitBtn = form.querySelector('button[type="submit"]');
+                const originalBtnText = submitBtn?.innerHTML || '';
+                
+                // Deshabilitar botón y mostrar estado de carga
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+                }
+                
                 try {
-                    // Simular envío
-                    await this.submitContactForm(data);
-                    Utils.showToast('Mensaje enviado exitosamente', 'success');
+                    // Enviar al backend
+                    const response = await this.submitContactForm(data);
+                    
+                    // Mostrar mensaje de éxito más visible y claro
+                    const successMessage = response?.message || '¡Mensaje enviado exitosamente! Nos pondremos en contacto contigo a la brevedad posible.';
+                    Utils.showToast(successMessage, 'success', 7000); // 7 segundos para mensajes importantes
+                    
+                    // Resetear formulario
                     form.reset();
                 } catch (error) {
-                    Utils.showToast('Error al enviar mensaje', 'error');
+                    const errorMessage = error.message || 'Error al enviar mensaje. Por favor, intenta nuevamente.';
+                    Utils.showToast(errorMessage, 'error');
+                } finally {
+                    // Restaurar botón
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalBtnText;
+                    }
                 }
             });
         });
@@ -415,13 +438,23 @@ class ECommerceApp {
 
     // Enviar formulario de contacto
     async submitContactForm(data) {
-        // Simular delay de red
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        if (!this.apiClient) {
+            throw new Error('API Client no está disponible');
+        }
         
-        // Aquí se integraría con el backend
-        console.log('Datos del formulario:', data);
-        
-        return true;
+        try {
+            // Enviar al endpoint del backend
+            const response = await this.apiClient.post('/contact', data);
+            
+            if (!response.success) {
+                throw new Error(response.error || 'Error al enviar el mensaje');
+            }
+            
+            return response;
+        } catch (error) {
+            console.error('Error al enviar formulario de contacto:', error);
+            throw error;
+        }
     }
 
     // Configurar filtros de productos

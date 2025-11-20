@@ -6,7 +6,7 @@
  *   node scripts/sync-from-dolibarr-polling.js
  * 
  * O configurar como cron job:
- *   */15 * * * * cd /ruta/proyecto && node scripts/sync-from-dolibarr-polling.js
+ *   Cada 15 minutos: 0,15,30,45 * * * * cd /ruta/proyecto && node scripts/sync-from-dolibarr-polling.js
  */
 
 const path = require('path');

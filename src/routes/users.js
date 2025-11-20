@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const db = require('../config/database');
 const { validateUser, validateId } = require('../middleware/validation');
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
+const requireDatabase = require('../middleware/requireDatabase');
 
 const router = express.Router();
 
@@ -17,7 +18,7 @@ const generateToken = (userId, isAdmin = false) => {
 };
 
 // POST /api/users/register - Registrar nuevo usuario
-router.post('/register', validateUser, async (req, res, next) => {
+router.post('/register', requireDatabase, validateUser, async (req, res, next) => {
     try {
         const { email, password, first_name, last_name, phone, company } = req.body;
 
@@ -86,7 +87,7 @@ router.post('/register', validateUser, async (req, res, next) => {
 });
 
 // POST /api/users/login - Iniciar sesión
-router.post('/login', async (req, res, next) => {
+router.post('/login', requireDatabase, async (req, res, next) => {
     try {
         const { email, password } = req.body;
 
@@ -156,7 +157,7 @@ router.post('/login', async (req, res, next) => {
 });
 
 // GET /api/users/profile - Obtener perfil del usuario autenticado
-router.get('/profile', authenticateToken, async (req, res, next) => {
+router.get('/profile', authenticateToken, requireDatabase, async (req, res, next) => {
     try {
         const userId = req.user.id;
 
@@ -188,7 +189,7 @@ router.get('/profile', authenticateToken, async (req, res, next) => {
 });
 
 // PUT /api/users/profile - Actualizar perfil del usuario
-router.put('/profile', authenticateToken, async (req, res, next) => {
+router.put('/profile', authenticateToken, requireDatabase, async (req, res, next) => {
     try {
         const userId = req.user.id;
         const {
@@ -242,7 +243,7 @@ router.put('/profile', authenticateToken, async (req, res, next) => {
 });
 
 // PUT /api/users/change-password - Cambiar contraseña
-router.put('/change-password', authenticateToken, async (req, res, next) => {
+router.put('/change-password', authenticateToken, requireDatabase, async (req, res, next) => {
     try {
         const userId = req.user.id;
         const { current_password, new_password } = req.body;
@@ -304,7 +305,7 @@ router.put('/change-password', authenticateToken, async (req, res, next) => {
 });
 
 // GET /api/users/orders - Obtener órdenes del usuario
-router.get('/orders', authenticateToken, async (req, res, next) => {
+router.get('/orders', authenticateToken, requireDatabase, async (req, res, next) => {
     try {
         const userId = req.user.id;
         const { page = 1, limit = 10 } = req.query;
@@ -371,7 +372,7 @@ router.get('/orders', authenticateToken, async (req, res, next) => {
 });
 
 // GET /api/users - Obtener todos los usuarios (Admin)
-router.get('/', authenticateToken, requireAdmin, async (req, res, next) => {
+router.get('/', authenticateToken, requireAdmin, requireDatabase, async (req, res, next) => {
     try {
         const { page = 1, limit = 20, search } = req.query;
         const offset = (page - 1) * limit;
@@ -419,7 +420,7 @@ router.get('/', authenticateToken, requireAdmin, async (req, res, next) => {
 });
 
 // PUT /api/users/:id/toggle-status - Activar/desactivar usuario (Admin)
-router.put('/:id/toggle-status', authenticateToken, requireAdmin, validateId, async (req, res, next) => {
+router.put('/:id/toggle-status', authenticateToken, requireAdmin, requireDatabase, validateId, async (req, res, next) => {
     try {
         const { id } = req.params;
 

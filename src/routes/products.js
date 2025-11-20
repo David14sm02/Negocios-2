@@ -2,6 +2,7 @@ const express = require('express');
 const db = require('../config/database');
 const { validateProduct, validateCategory, validateId, validateSearch } = require('../middleware/validation');
 const { authenticateToken, requireAdmin, optionalAuth } = require('../middleware/auth');
+const requireDatabase = require('../middleware/requireDatabase');
 const dolibarrService = require('../services/dolibarrService');
 
 const router = express.Router();
@@ -115,7 +116,7 @@ const getCategoryWithStats = async (id) => {
 };
 
 // GET /api/products - Obtener todos los productos con filtros
-router.get('/', optionalAuth, validateSearch, async (req, res, next) => {
+router.get('/', optionalAuth, requireDatabase, validateSearch, async (req, res, next) => {
     try {
         const {
             page = 1,
@@ -240,7 +241,7 @@ router.get('/', optionalAuth, validateSearch, async (req, res, next) => {
 });
 
 // GET /api/products/:id - Obtener un producto por ID
-router.get('/:id', optionalAuth, validateId, async (req, res, next) => {
+router.get('/:id', optionalAuth, requireDatabase, validateId, async (req, res, next) => {
     try {
         const { id } = req.params;
 
@@ -281,7 +282,7 @@ router.get('/:id', optionalAuth, validateId, async (req, res, next) => {
 });
 
 // GET /api/products/category/:categoryId - Obtener productos por categoría
-router.get('/category/:categoryId', optionalAuth, validateId, async (req, res, next) => {
+router.get('/category/:categoryId', optionalAuth, requireDatabase, validateId, async (req, res, next) => {
     try {
         const { categoryId } = req.params;
         const { limit = 12, page = 1 } = req.query;
@@ -332,7 +333,7 @@ router.get('/category/:categoryId', optionalAuth, validateId, async (req, res, n
 });
 
 // GET /api/products/featured - Obtener productos destacados
-router.get('/featured/list', optionalAuth, async (req, res, next) => {
+router.get('/featured/list', optionalAuth, requireDatabase, async (req, res, next) => {
     try {
         const { limit = 8 } = req.query;
 
@@ -368,7 +369,7 @@ router.get('/featured/list', optionalAuth, async (req, res, next) => {
 });
 
 // POST /api/products - Crear nuevo producto (Admin)
-router.post('/', authenticateToken, requireAdmin, validateProduct, async (req, res, next) => {
+router.post('/', authenticateToken, requireAdmin, requireDatabase, validateProduct, async (req, res, next) => {
     try {
         const {
             name,
@@ -463,7 +464,7 @@ router.post('/', authenticateToken, requireAdmin, validateProduct, async (req, r
 });
 
 // PUT /api/products/:id - Actualizar producto (Admin)
-router.put('/:id', authenticateToken, requireAdmin, validateId, validateProduct, async (req, res, next) => {
+router.put('/:id', authenticateToken, requireAdmin, requireDatabase, validateId, validateProduct, async (req, res, next) => {
     try {
         const { id } = req.params;
         const {
@@ -584,7 +585,7 @@ router.put('/:id', authenticateToken, requireAdmin, validateId, validateProduct,
 });
 
 // PATCH /api/products/:id/stock - Actualizar stock de un producto (Admin)
-router.patch('/:id/stock', authenticateToken, requireAdmin, validateId, async (req, res, next) => {
+router.patch('/:id/stock', authenticateToken, requireAdmin, requireDatabase, validateId, async (req, res, next) => {
     try {
         const { id } = req.params;
         let { stock, min_stock } = req.body;
@@ -687,7 +688,7 @@ router.patch('/:id/stock', authenticateToken, requireAdmin, validateId, async (r
 });
 
 // DELETE /api/products/:id - Eliminar producto (Admin)
-router.delete('/:id', authenticateToken, requireAdmin, validateId, async (req, res, next) => {
+router.delete('/:id', authenticateToken, requireAdmin, requireDatabase, validateId, async (req, res, next) => {
     try {
         const { id } = req.params;
 
@@ -720,7 +721,7 @@ router.delete('/:id', authenticateToken, requireAdmin, validateId, async (req, r
 });
 
 // GET /api/products/categories/manage - Obtener todas las categorías (incluye inactivas)
-router.get('/categories/manage', authenticateToken, requireAdmin, async (req, res, next) => {
+router.get('/categories/manage', authenticateToken, requireAdmin, requireDatabase, async (req, res, next) => {
     try {
         const result = await db.query(`
             SELECT 
@@ -752,7 +753,7 @@ router.get('/categories/manage', authenticateToken, requireAdmin, async (req, re
 });
 
 // POST /api/products/categories - Crear nueva categoría
-router.post('/categories', authenticateToken, requireAdmin, validateCategory, async (req, res, next) => {
+router.post('/categories', authenticateToken, requireAdmin, requireDatabase, validateCategory, async (req, res, next) => {
     try {
         const { name, description, parent_id, image_url, is_active } = req.body;
 
@@ -797,7 +798,7 @@ router.post('/categories', authenticateToken, requireAdmin, validateCategory, as
 });
 
 // PUT /api/products/categories/:id - Actualizar categoría existente
-router.put('/categories/:id', authenticateToken, requireAdmin, validateId, validateCategory, async (req, res, next) => {
+router.put('/categories/:id', authenticateToken, requireAdmin, requireDatabase, validateId, validateCategory, async (req, res, next) => {
     try {
         const { id } = req.params;
         const { name, description, parent_id, image_url, is_active } = req.body;
@@ -863,7 +864,7 @@ router.put('/categories/:id', authenticateToken, requireAdmin, validateId, valid
 });
 
 // DELETE /api/products/categories/:id - Desactivar categoría
-router.delete('/categories/:id', authenticateToken, requireAdmin, validateId, async (req, res, next) => {
+router.delete('/categories/:id', authenticateToken, requireAdmin, requireDatabase, validateId, async (req, res, next) => {
     try {
         const { id } = req.params;
 
@@ -895,7 +896,7 @@ router.delete('/categories/:id', authenticateToken, requireAdmin, validateId, as
 });
 
 // GET /api/products/categories/list - Obtener todas las categorías
-router.get('/categories/list', async (req, res, next) => {
+router.get('/categories/list', requireDatabase, async (req, res, next) => {
     try {
         const result = await db.query(`
             SELECT 

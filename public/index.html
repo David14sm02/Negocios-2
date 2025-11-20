@@ -161,32 +161,11 @@
     <section class="blog-preview">
         <div class="container">
             <h2 class="section-title">Últimas Noticias Técnicas</h2>
-            <div class="blog-grid">
-                <article class="blog-card">
-                    <div class="blog-image">
-                        <div class="blog-placeholder">
-                            <i class="fas fa-newspaper"></i>
-                        </div>
-                    </div>
-                    <div class="blog-content">
-                        <h3>Guía Completa de Instalación Cat6a</h3>
-                        <p>Aprende las mejores prácticas para instalar cableado Cat6a en proyectos comerciales.</p>
-                        <a href="blog.html" class="blog-link">Leer más</a>
-                    </div>
-                </article>
-                
-                <article class="blog-card">
-                    <div class="blog-image">
-                        <div class="blog-placeholder">
-                            <i class="fas fa-lightbulb"></i>
-                        </div>
-                    </div>
-                    <div class="blog-content">
-                        <h3>Tendencias en Infraestructura de Red 2024</h3>
-                        <p>Descubre las últimas tecnologías y tendencias en el mundo de las redes.</p>
-                        <a href="blog.html" class="blog-link">Leer más</a>
-                    </div>
-                </article>
+            <div class="blog-grid" id="featuredBlogArticles">
+                <!-- Los artículos destacados se cargarán dinámicamente -->
+            </div>
+            <div class="text-center" style="margin-top: 2rem;">
+                <a href="blog.html" class="btn btn-outline">Ver Todas las Noticias</a>
             </div>
         </div>
     </section>
@@ -291,6 +270,7 @@
     <script src="js/api.js"></script>
     <script src="js/cart.js"></script>
     <script src="js/main.js"></script>
+    <script src="js/blog.js"></script>
     <script src="js/chatbot.js"></script>
 </body>
 </html>

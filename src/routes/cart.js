@@ -2,6 +2,7 @@ const express = require('express');
 const db = require('../config/database');
 const { validateCartItem, validateId, validateProductId } = require('../middleware/validation');
 const { authenticateToken, optionalAuth } = require('../middleware/auth');
+const requireDatabase = require('../middleware/requireDatabase');
 
 const router = express.Router();
 
@@ -58,7 +59,7 @@ const updateCartInDB = async (sessionId, items, total) => {
 };
 
 // GET /api/cart - Obtener carrito del usuario
-router.get('/', optionalAuth, async (req, res, next) => {
+router.get('/', optionalAuth, requireDatabase, async (req, res, next) => {
     try {
         const sessionId = req.headers['x-session-id'] || req.sessionID || 'anonymous';
         const userId = req.user ? req.user.id : null;
@@ -120,7 +121,7 @@ router.get('/', optionalAuth, async (req, res, next) => {
 });
 
 // POST /api/cart/add - Agregar producto al carrito
-router.post('/add', optionalAuth, validateCartItem, async (req, res, next) => {
+router.post('/add', optionalAuth, requireDatabase, validateCartItem, async (req, res, next) => {
     try {
         const { product_id, quantity } = req.body;
         const sessionId = req.headers['x-session-id'] || req.sessionID || 'anonymous';
@@ -203,7 +204,7 @@ router.post('/add', optionalAuth, validateCartItem, async (req, res, next) => {
 });
 
 // PUT /api/cart/update - Actualizar cantidad de un producto
-router.put('/update', optionalAuth, validateCartItem, async (req, res, next) => {
+router.put('/update', optionalAuth, requireDatabase, validateCartItem, async (req, res, next) => {
     try {
         const { product_id, quantity } = req.body;
         const sessionId = req.headers['x-session-id'] || req.sessionID || 'anonymous';
@@ -272,7 +273,7 @@ router.put('/update', optionalAuth, validateCartItem, async (req, res, next) => 
 });
 
 // DELETE /api/cart/remove/:product_id - Remover producto del carrito
-router.delete('/remove/:product_id', optionalAuth, validateProductId, async (req, res, next) => {
+router.delete('/remove/:product_id', optionalAuth, requireDatabase, validateProductId, async (req, res, next) => {
     try {
         const { product_id } = req.params;
         const sessionId = req.headers['x-session-id'] || req.sessionID || 'anonymous';
@@ -313,7 +314,7 @@ router.delete('/remove/:product_id', optionalAuth, validateProductId, async (req
 });
 
 // DELETE /api/cart/clear - Limpiar carrito
-router.delete('/clear', optionalAuth, async (req, res, next) => {
+router.delete('/clear', optionalAuth, requireDatabase, async (req, res, next) => {
     try {
         const sessionId = req.headers['x-session-id'] || req.sessionID || 'anonymous';
 
@@ -334,7 +335,7 @@ router.delete('/clear', optionalAuth, async (req, res, next) => {
 });
 
 // GET /api/cart/count - Obtener cantidad de items en el carrito
-router.get('/count', optionalAuth, async (req, res, next) => {
+router.get('/count', optionalAuth, requireDatabase, async (req, res, next) => {
     try {
         const sessionId = req.headers['x-session-id'] || req.sessionID || 'anonymous';
 

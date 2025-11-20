@@ -7,10 +7,11 @@ class CatalogManager {
         this.itemsPerPage = 8;
         this.currentCategory = 'all';
         this.currentSort = 'name';
-        this.maxPrice = 5000;
+        this.maxPrice = null; // Se calculará automáticamente basado en los productos
         this.currentView = 'grid';
         this.categories = [];
         this.categoryAliases = {};
+        this.currentSearchQuery = ''; // Rastrear búsqueda activa
         this.defaultCategories = [
             { id: 'default-cables', name: 'Cables de Red', slug: 'cables' },
             { id: 'default-conectores', name: 'Conectores', slug: 'conectores' },
@@ -134,6 +135,8 @@ class CatalogManager {
                         };
                     }).filter(p => p !== null); // Filtrar productos inválidos
                     this.filteredProducts = [...this.products];
+                    // Calcular precio máximo automáticamente basado en los productos
+                    this.calculateMaxPrice();
                     console.log(`✅ Cargados ${this.products.length} productos desde la API`);
                     console.log('IDs de productos:', this.products.map(p => p.id).join(', '));
                     return;
@@ -162,11 +165,15 @@ class CatalogManager {
             }
             
             this.filteredProducts = [...this.products];
+            // Calcular precio máximo automáticamente basado en los productos
+            this.calculateMaxPrice();
             console.log(`✅ Productos listos para renderizar (IDs finales: ${this.products.map(p => p.id).join(', ')})`);
         } catch (error) {
             console.error('Error al cargar productos:', error);
             this.products = this.getMockProducts();
             this.filteredProducts = [...this.products];
+            // Calcular precio máximo automáticamente basado en los productos
+            this.calculateMaxPrice();
         }
     }
 
@@ -337,6 +344,7 @@ class CatalogManager {
                 filterButtons.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 this.currentCategory = btn.dataset.category;
+                // Si hay una búsqueda activa, mantenerla al cambiar de categoría
                 this.applyFilters();
             });
         });
@@ -399,12 +407,29 @@ class CatalogManager {
         // Búsqueda
         const searchInput = document.getElementById('searchInput');
         if (searchInput) {
-            const debouncedSearch = Utils.debounce((query) => {
-                this.searchProducts(query);
-            }, 300);
+            const debouncedSearch = Utils.debounce(async (query) => {
+                await this.searchProducts(query);
+            }, 500); // Aumentar debounce a 500ms para búsquedas en API
 
             searchInput.addEventListener('input', (e) => {
                 debouncedSearch(e.target.value);
+            });
+
+            // Búsqueda al presionar Enter
+            searchInput.addEventListener('keypress', async (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    await this.searchProducts(searchInput.value);
+                }
+            });
+        }
+
+        // Botón de búsqueda
+        const searchBtn = document.getElementById('searchBtn');
+        if (searchBtn) {
+            searchBtn.addEventListener('click', async () => {
+                const query = searchInput?.value || '';
+                await this.searchProducts(query);
             });
         }
 
@@ -429,7 +454,10 @@ class CatalogManager {
             const searchInput = document.getElementById('searchInput');
             if (searchInput) {
                 searchInput.value = params.search;
-                this.searchProducts(params.search);
+                // Usar async/await para esperar la búsqueda
+                this.searchProducts(params.search).catch(error => {
+                    console.error('Error al buscar productos desde URL:', error);
+                });
             }
         }
 
@@ -438,15 +466,19 @@ class CatalogManager {
 
     // Aplicar filtros
     applyFilters() {
-        let filtered = [...this.products];
+        // Si hay una búsqueda activa, aplicar filtros sobre los resultados de búsqueda
+        // Si no, aplicar filtros sobre todos los productos
+        let filtered = this.currentSearchQuery ? [...this.filteredProducts] : [...this.products];
 
         // Filtrar por categoría
         if (this.currentCategory !== 'all') {
             filtered = filtered.filter(product => product.category === this.currentCategory);
         }
 
-        // Filtrar por precio
-        filtered = filtered.filter(product => product.price <= this.maxPrice);
+        // Filtrar por precio (solo si maxPrice está configurado)
+        if (this.maxPrice !== null && this.maxPrice > 0) {
+            filtered = filtered.filter(product => product.price <= this.maxPrice);
+        }
 
         // Ordenar
         filtered = this.sortProducts(filtered, this.currentSort);
@@ -459,15 +491,87 @@ class CatalogManager {
     }
 
     // Buscar productos
-    searchProducts(query) {
-        if (!query.trim()) {
-            this.filteredProducts = [...this.products];
-        } else {
-            const searchTerm = query.toLowerCase();
+    async searchProducts(query) {
+        const searchTerm = query.trim();
+        
+        if (!searchTerm) {
+            // Si no hay búsqueda, recargar todos los productos
+            this.currentSearchQuery = '';
+            await this.loadProducts();
+            this.currentPage = 1;
+            this.renderProducts();
+            this.updateProductsCount();
+            this.renderPagination();
+            return;
+        }
+
+        // Guardar el término de búsqueda activo
+        this.currentSearchQuery = searchTerm;
+
+        // Si hay búsqueda, usar la API para buscar en la base de datos
+        try {
+            if (window.apiClient) {
+                // Mostrar indicador de carga
+                const productsGrid = document.getElementById('productsGrid');
+                if (productsGrid) {
+                    productsGrid.innerHTML = '<div class="loading">Buscando productos...</div>';
+                }
+
+                // Llamar a la API con el parámetro de búsqueda
+                const response = await window.apiClient.getProducts({ 
+                    search: searchTerm,
+                    limit: 100 // Obtener más resultados para la búsqueda
+                });
+
+                if (response.success && response.data) {
+                    const productsArray = Array.isArray(response.data) ? response.data : [];
+                    
+                    // Normalizar productos de la API
+                    this.filteredProducts = productsArray.map(p => {
+                        const productId = parseInt(p.id);
+                        if (isNaN(productId) || productId < 1) {
+                            return null;
+                        }
+                        return {
+                            id: productId.toString(),
+                            name: p.name,
+                            description: p.description || '',
+                            price: parseFloat(p.price),
+                            category: this.normalizeCategory(p.category_slug || p.category_name || p.category),
+                            sku: p.sku,
+                            stock: p.stock || 0,
+                            image: p.image_url || this.getPlaceholderImage(p.name)
+                        };
+                    }).filter(p => p !== null);
+
+                    console.log(`🔍 Búsqueda "${searchTerm}": ${this.filteredProducts.length} productos encontrados`);
+                } else {
+                    // Si la API no devuelve resultados, intentar búsqueda local como fallback
+                    console.warn('La API no devolvió resultados, usando búsqueda local como fallback');
+                    const searchTermLower = searchTerm.toLowerCase();
+                    this.filteredProducts = this.products.filter(product => 
+                        product.name.toLowerCase().includes(searchTermLower) ||
+                        product.description.toLowerCase().includes(searchTermLower) ||
+                        (product.sku && product.sku.toLowerCase().includes(searchTermLower))
+                    );
+                }
+            } else {
+                // Fallback: búsqueda local si no hay API client
+                const searchTermLower = searchTerm.toLowerCase();
+                this.filteredProducts = this.products.filter(product => 
+                    product.name.toLowerCase().includes(searchTermLower) ||
+                    product.description.toLowerCase().includes(searchTermLower) ||
+                    (product.sku && product.sku.toLowerCase().includes(searchTermLower))
+                );
+            }
+        } catch (error) {
+            console.error('Error al buscar productos:', error);
+            // Fallback: búsqueda local en caso de error
+            const searchTermLower = searchTerm.toLowerCase();
             this.filteredProducts = this.products.filter(product => 
-                product.name.toLowerCase().includes(searchTerm) ||
-                product.description.toLowerCase().includes(searchTerm) ||
-                product.sku.toLowerCase().includes(searchTerm)
+                product.name.toLowerCase().includes(searchTermLower) ||
+                product.description.toLowerCase().includes(searchTermLower) ||
+                (product.sku && product.sku.toLowerCase().includes(searchTermLower))
             );
         }
 
@@ -616,6 +720,40 @@ class CatalogManager {
                 }
             });
         });
+    }
+
+    // Calcular precio máximo automáticamente basado en los productos
+    calculateMaxPrice() {
+        if (this.products.length === 0) {
+            this.maxPrice = 5000; // Valor por defecto si no hay productos
+            return;
+        }
+        
+        // Encontrar el precio máximo entre todos los productos
+        const maxProductPrice = Math.max(...this.products.map(p => parseFloat(p.price) || 0));
+        
+        // Redondear hacia arriba al siguiente múltiplo de 1000 para un mejor UX
+        this.maxPrice = Math.ceil(maxProductPrice / 1000) * 1000;
+        
+        // Asegurar un mínimo de 5000
+        if (this.maxPrice < 5000) {
+            this.maxPrice = 5000;
+        }
+        
+        // Actualizar el slider de precio si existe
+        const priceSlider = document.getElementById('priceSlider');
+        const maxPriceDisplay = document.getElementById('maxPrice');
+        
+        if (priceSlider) {
+            priceSlider.max = this.maxPrice;
+            priceSlider.value = this.maxPrice;
+        }
+        
+        if (maxPriceDisplay) {
+            maxPriceDisplay.textContent = Utils.formatPrice(this.maxPrice);
+        }
+        
+        console.log(`💰 Precio máximo calculado automáticamente: ${Utils.formatPrice(this.maxPrice)}`);
     }
 
     // Actualizar contador de productos

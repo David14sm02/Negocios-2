@@ -7,6 +7,7 @@ const router = express.Router();
 const dolibarrService = require('../services/dolibarrService');
 const db = require('../config/database');
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
+const requireDatabase = require('../middleware/requireDatabase');
 
 // GET /api/dolibarr/test - Probar conexión con Dolibarr
 router.get('/test', authenticateToken, requireAdmin, async (req, res, next) => {
@@ -19,7 +20,7 @@ router.get('/test', authenticateToken, requireAdmin, async (req, res, next) => {
 });
 
 // POST /api/dolibarr/sync/customer/:userId - Sincronizar cliente con Dolibarr
-router.post('/sync/customer/:userId', authenticateToken, requireAdmin, async (req, res, next) => {
+router.post('/sync/customer/:userId', authenticateToken, requireAdmin, requireDatabase, async (req, res, next) => {
     try {
         const { userId } = req.params;
         
@@ -39,7 +40,7 @@ router.post('/sync/customer/:userId', authenticateToken, requireAdmin, async (re
 });
 
 // POST /api/dolibarr/sync/product/:productId - Sincronizar producto con Dolibarr
-router.post('/sync/product/:productId', authenticateToken, requireAdmin, async (req, res, next) => {
+router.post('/sync/product/:productId', authenticateToken, requireAdmin, requireDatabase, async (req, res, next) => {
     try {
         const { productId } = req.params;
         
@@ -59,7 +60,7 @@ router.post('/sync/product/:productId', authenticateToken, requireAdmin, async (
 });
 
 // POST /api/dolibarr/sync/order/:orderId - Sincronizar orden con Dolibarr
-router.post('/sync/order/:orderId', authenticateToken, requireAdmin, async (req, res, next) => {
+router.post('/sync/order/:orderId', authenticateToken, requireAdmin, requireDatabase, async (req, res, next) => {
     try {
         const { orderId } = req.params;
         
@@ -135,7 +136,7 @@ router.get('/orders', authenticateToken, requireAdmin, async (req, res, next) =>
 });
 
 // POST /api/dolibarr/sync/from-dolibarr/product/:dolibarrId - Sincronizar producto desde Dolibarr
-router.post('/sync/from-dolibarr/product/:dolibarrId', authenticateToken, requireAdmin, async (req, res, next) => {
+router.post('/sync/from-dolibarr/product/:dolibarrId', authenticateToken, requireAdmin, requireDatabase, async (req, res, next) => {
     try {
         const { dolibarrId } = req.params;
         
@@ -161,7 +162,7 @@ router.post('/sync/from-dolibarr/product/:dolibarrId', authenticateToken, requir
 });
 
 // POST /api/dolibarr/sync/from-dolibarr/stock/:sku - Sincronizar stock desde Dolibarr
-router.post('/sync/from-dolibarr/stock/:sku', authenticateToken, requireAdmin, async (req, res, next) => {
+router.post('/sync/from-dolibarr/stock/:sku', authenticateToken, requireAdmin, requireDatabase, async (req, res, next) => {
     try {
         const { sku } = req.params;
         const { dolibarr_id } = req.body;
@@ -178,7 +179,7 @@ router.post('/sync/from-dolibarr/stock/:sku', authenticateToken, requireAdmin, a
 });
 
 // POST /api/dolibarr/sync/from-dolibarr/all - Sincronizar todos los productos desde Dolibarr
-router.post('/sync/from-dolibarr/all', authenticateToken, requireAdmin, async (req, res, next) => {
+router.post('/sync/from-dolibarr/all', authenticateToken, requireAdmin, requireDatabase, async (req, res, next) => {
     try {
         const { onlyNew = false, limit = null } = req.body;
         
@@ -198,7 +199,7 @@ router.post('/sync/from-dolibarr/all', authenticateToken, requireAdmin, async (r
 });
 
 // POST /api/dolibarr/webhook - Webhook para recibir notificaciones de Dolibarr
-router.post('/webhook', express.json(), async (req, res, next) => {
+router.post('/webhook', express.json(), requireDatabase, async (req, res, next) => {
     try {
         // Validar autenticación (token secreto en header o body)
         const webhookSecret = process.env.DOLIBARR_WEBHOOK_SECRET;

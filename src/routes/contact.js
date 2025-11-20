@@ -52,7 +52,7 @@ router.post('/', async (req, res) => {
         // Respuesta exitosa
         res.json({
             success: true,
-            message: 'Tu mensaje ha sido enviado exitosamente. Nos pondremos en contacto contigo pronto.',
+            message: '¡Mensaje enviado exitosamente! Nos pondremos en contacto contigo a la brevedad posible.',
             data: {
                 id: Date.now(), // ID simulado
                 ...contactData

@@ -27,6 +27,7 @@ const userRoutes = require('./routes/users');
 const orderRoutes = require('./routes/orders');
 const paymentRoutes = require('./routes/payments');
 const dolibarrRoutes = require('./routes/dolibarr');
+const contactRoutes = require('./routes/contact');
 const { handleStripeWebhook } = require('./routes/webhooks');
 
 const app = express();
@@ -118,6 +119,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/dolibarr', dolibarrRoutes);
+app.use('/api/contact', contactRoutes);
 
 // Ruta de salud del servidor
 app.get('/api/health', (req, res) => {

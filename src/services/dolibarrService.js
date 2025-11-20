@@ -21,16 +21,36 @@ class DolibarrService {
             return;
         }
 
+        // No lanzar error en el constructor, solo validar cuando se use el servicio
+        // Esto permite que el servidor inicie aunque no esté configurado Dolibarr
+        if (!this.baseURL) {
+            console.warn('⚠️ DOLIBARR_URL no está configurada en config.env. La integración con Dolibarr no funcionará hasta que se configure.');
+        }
+
+        if (!this.apiKey && !(this.apiUser && this.apiPassword)) {
+            console.warn('⚠️ Debes configurar DOLIBARR_API_KEY o DOLIBARR_API_USER y DOLIBARR_API_PASSWORD en config.env. La integración con Dolibarr no funcionará hasta que se configure.');
+        }
+
+        if (!this.defaultWarehouseId) {
+            console.warn('⚠️ DOLIBARR_DEFAULT_WAREHOUSE_ID no está configurada. Los movimientos de inventario pueden fallar.');
+        }
+    }
+
+    /**
+     * Validar que la configuración esté completa antes de usar el servicio
+     * @throws {Error} Si la configuración no está completa
+     */
+    _validateConfig() {
+        if (!this.enabled) {
+            throw new Error('Integración con Dolibarr deshabilitada (DOLIBARR_ENABLED=false)');
+        }
+
         if (!this.baseURL) {
             throw new Error('DOLIBARR_URL no está configurada en config.env');
         }
 
         if (!this.apiKey && !(this.apiUser && this.apiPassword)) {
             throw new Error('Debes configurar DOLIBARR_API_KEY o DOLIBARR_API_USER y DOLIBARR_API_PASSWORD en config.env');
-        }
-
-        if (!this.defaultWarehouseId) {
-            console.warn('⚠️ DOLIBARR_DEFAULT_WAREHOUSE_ID no está configurada. Los movimientos de inventario pueden fallar.');
         }
     }
 
@@ -109,17 +129,8 @@ class DolibarrService {
             reference = null
         } = options;
 
-        if (!this.enabled) {
-            throw new Error('Integración con Dolibarr deshabilitada (DOLIBARR_ENABLED=false)');
-        }
-
-        if (!this.baseURL) {
-            throw new Error('DOLIBARR_URL no está configurada en config.env');
-        }
-
-        if (!this.apiKey && !(this.apiUser && this.apiPassword)) {
-            throw new Error('Configura DOLIBARR_API_KEY o DOLIBARR_API_USER y DOLIBARR_API_PASSWORD en config.env');
-        }
+        // Validar configuración antes de hacer la petición
+        this._validateConfig();
 
         const url = `${this.baseURL}/api/index.php${endpoint}`;
         const actionLabel = `${method.toUpperCase()} ${endpoint}`;
@@ -934,19 +945,24 @@ class DolibarrService {
                     stock: productData.stock
                 };
 
+                // Determinar sync_direction final
+                let finalSyncDirection = productData.sync_direction;
+                if (existingProduct.sync_direction === 'outbound') {
+                    // Si era outbound, ahora es bidireccional
+                    finalSyncDirection = 'bidirectional';
+                } else if (!existingProduct.sync_direction || existingProduct.sync_direction === 'inbound') {
+                    // Si era inbound o null, mantener inbound
+                    finalSyncDirection = 'inbound';
+                }
+                updateFields.sync_direction = finalSyncDirection;
+
                 // Si es bidireccional o inbound, actualizar también nombre, descripción y precio
-                if (productData.sync_direction === 'bidirectional' || productData.sync_direction === 'inbound') {
+                // Si es outbound, solo actualizar stock y metadatos de sincronización
+                if (finalSyncDirection === 'bidirectional' || finalSyncDirection === 'inbound') {
                     updateFields.name = productData.name;
                     updateFields.description = productData.description;
                     updateFields.price = productData.price;
                     updateFields.is_active = productData.is_active;
-                }
-
-                // Actualizar sync_direction si es necesario
-                if (existingProduct.sync_direction === 'outbound') {
-                    updateFields.sync_direction = 'bidirectional';
-                } else if (!existingProduct.sync_direction || existingProduct.sync_direction === 'inbound') {
-                    updateFields.sync_direction = productData.sync_direction;
                 }
 
                 await db.query(`

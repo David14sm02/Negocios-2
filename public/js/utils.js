@@ -31,9 +31,12 @@ class Utils {
     }
 
     // Mostrar notificación toast
-    static showToast(message, type = 'info') {
+    static showToast(message, type = 'info', duration = null) {
         const toast = document.createElement('div');
         toast.className = `toast toast-${type}`;
+        
+        // Duración por defecto según el tipo
+        const defaultDuration = duration !== null ? duration : (type === 'success' ? 6000 : 5000);
         
         toast.innerHTML = `
             <div class="toast-header">
@@ -48,8 +51,8 @@ class Utils {
         // Mostrar toast
         setTimeout(() => toast.classList.add('show'), 100);
 
-        // Auto cerrar después de 5 segundos
-        setTimeout(() => this.hideToast(toast), 5000);
+        // Auto cerrar después de la duración especificada
+        setTimeout(() => this.hideToast(toast), defaultDuration);
 
         // Cerrar al hacer click
         toast.querySelector('.toast-close').addEventListener('click', () => {
